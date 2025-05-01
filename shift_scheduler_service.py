@@ -56,15 +56,14 @@ def schedule_shifts(employees, days):
 @app.route('/')
 def root_endpoint():
     return """
-    Welcome to the Shift Scheduler Service!
-
-        / \__
-       (    @\___
-       /         O
-      /   (_____/
-     /_____/   U
-
-    Use the /schedule endpoint to generate shift schedules.
+    <html>
+        <head><title>Welcome</title></head>
+        <body>
+            <h1>Welcome to the Shift Scheduler Service!</h1>
+            <img src="https://placedog.net/500/280" alt="Shih Tzu Dog">
+            <p>Use the /schedule endpoint to generate shift schedules.</p>
+        </body>
+    </html>
     """
 
 @app.route('/schedule', methods=['POST'])
