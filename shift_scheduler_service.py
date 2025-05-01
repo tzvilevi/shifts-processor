@@ -53,6 +53,20 @@ def schedule_shifts(employees, days):
     else:
         return None
 
+@app.route('/')
+def root_endpoint():
+    return """
+    Welcome to the Shift Scheduler Service!
+
+        / \__
+       (    @\___
+       /         O
+      /   (_____/
+     /_____/   U
+
+    Use the /schedule endpoint to generate shift schedules.
+    """
+
 @app.route('/schedule', methods=['POST'])
 def schedule_endpoint():
     data = request.get_json()
