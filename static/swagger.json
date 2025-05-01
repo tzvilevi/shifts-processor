@@ -1,13 +1,15 @@
 {
-  "swagger": "2.0",
+  "openapi": "3.0.0",
   "info": {
     "version": "1.0.0",
     "title": "Shift Scheduler API",
     "description": "API for scheduling employee shifts."
   },
-  "host": "shifts-processor.onrender.com",
-  "basePath": "/",
-  "schemes": ["http"],
+  "servers": [
+    {
+      "url": "http://shifts-processor.onrender.com"
+    }
+  ],
   "paths": {
     "/": {
       "get": {
@@ -29,29 +31,29 @@
       "post": {
         "summary": "Generate Shift Schedule",
         "description": "Generates a shift schedule based on the provided employees and days.",
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "employees": {
-                  "type": "array",
-                  "items": { "type": "string" },
-                  "example": ["Alice", "Bob", "Charlie"]
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "employees": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["Alice", "Bob", "Charlie"]
+                  },
+                  "days": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["Monday", "Tuesday", "Wednesday"]
+                  }
                 },
-                "days": {
-                  "type": "array",
-                  "items": { "type": "string" },
-                  "example": ["Monday", "Tuesday", "Wednesday"]
-                }
-              },
-              "required": ["employees", "days"]
+                "required": ["employees", "days"]
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "CSV file with the schedule",
