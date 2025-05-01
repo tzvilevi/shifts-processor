@@ -2,6 +2,7 @@ from flask import Flask, request, Response
 from ortools.sat.python import cp_model
 import csv
 import io
+from flask_swagger_ui import get_swaggerui_blueprint
 
 app = Flask(__name__)
 
@@ -89,6 +90,12 @@ def schedule_endpoint():
 
     output.seek(0)
     return Response(output, mimetype='text/csv', headers={"Content-Disposition": "attachment;filename=schedule.csv"})
+
+# Swagger setup
+SWAGGER_URL = '/swagger'
+API_URL = '/static/swagger.json'
+swaggerui_blueprint = get_swaggerui_blueprint(SWAGGER_URL, API_URL)
+app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
 if __name__ == '__main__':
     app.run(debug=True)

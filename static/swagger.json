@@ -1,0 +1,71 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Shift Scheduler API",
+    "description": "API for scheduling employee shifts."
+  },
+  "host": "shifts-processor.onrender.com",
+  "basePath": "/",
+  "schemes": ["http"],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Welcome Endpoint",
+        "description": "Returns a welcome message with an image of a Shih Tzu dog.",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "text/html": {
+                "example": "<html>...</html>"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule": {
+      "post": {
+        "summary": "Generate Shift Schedule",
+        "description": "Generates a shift schedule based on the provided employees and days.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "employees": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "example": ["Alice", "Bob", "Charlie"]
+                },
+                "days": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "example": ["Monday", "Tuesday", "Wednesday"]
+                }
+              },
+              "required": ["employees", "days"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV file with the schedule",
+            "content": {
+              "text/csv": {
+                "example": "Day,Shift,Employee\nMonday,morning,Alice\n..."
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or no valid schedule found."
+          }
+        }
+      }
+    }
+  }
+}
