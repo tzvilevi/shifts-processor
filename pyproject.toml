@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "shifts-processor"
+version = "0.1.0"
+description = "A shift scheduling solution using OR-Tools."
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+ortools = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
