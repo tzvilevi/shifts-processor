@@ -8,6 +8,7 @@ authors = ["Your Name <your.email@example.com>"]
 python = ">=3.11,<4.0"
 ortools = "*"
 flask = "^3.1.0"
+gunicorn = "^23.0.0"
 
 [tool.poetry.scripts]
 run-service = "shift_scheduler_service:app"
