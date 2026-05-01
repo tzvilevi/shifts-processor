@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מחשבון שכר — בקרי מקורות</title>
+<style>
+  :root {
+    --blue: #1a56db;
+    --blue-dark: #1241a8;
+    --blue-light: #e8f0fe;
+    --green: #0b7a3e;
+    --green-light: #d4edda;
+    --red: #c0392b;
+    --red-light: #fde8e8;
+    --yellow: #f6a623;
+    --yellow-light: #fff8e1;
+    --gray: #6b7280;
+    --gray-light: #f3f4f6;
+    --border: #d1d5db;
+    --shadow: 0 1px 4px rgba(0,0,0,.12);
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    color: #1f2937;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--blue);
+    color: #fff;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  header h1 { font-size: 1.4rem; font-weight: 700; }
+  header p  { font-size: .85rem; opacity: .85; }
+
+  /* ── Layout ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+
+  /* ── Card ── */
+  .card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .card-header {
+    background: var(--blue);
+    color: #fff;
+    padding: 11px 18px;
+    font-weight: 700;
+    font-size: .95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-header.green  { background: var(--green); }
+  .card-header.yellow { background: #b45309; }
+  .card-header.gray   { background: #374151; }
+  .card-body { padding: 18px; }
+
+  /* ── Grid helpers ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media(max-width:640px) { .grid2,.grid3 { grid-template-columns: 1fr; } }
+
+  /* ── Form elements ── */
+  label { display: block; font-size: .82rem; color: var(--gray); margin-bottom: 4px; font-weight: 600; }
+  input[type=number], input[type=text] {
+    width: 100%; padding: 7px 10px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: .95rem; text-align: left; direction: ltr;
+    transition: border-color .2s;
+  }
+  input[type=number]:focus, input[type=text]:focus {
+    outline: none; border-color: var(--blue);
+  }
+
+  /* ── Shift table ── */
+  .shift-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .shift-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--gray-light); border-radius: 8px; padding: 8px 12px;
+    gap: 10px;
+  }
+  .shift-item span { font-size: .88rem; font-weight: 600; flex: 1; }
+  .shift-item.shabbat { background: #fef9c3; }
+  .shift-item input { width: 64px; text-align: center; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px; border-radius: 7px; border: none;
+    font-size: .93rem; font-weight: 600; cursor: pointer;
+    transition: background .18s, transform .1s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-success { background: var(--green); color: #fff; }
+  .btn-success:hover { background: #065f2e; }
+  .btn-warning { background: #d97706; color: #fff; }
+  .btn-warning:hover { background: #b45309; }
+  .btn-secondary { background: var(--gray-light); color: #374151; border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-sm { padding: 5px 12px; font-size: .83rem; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ── Upload zone ── */
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: 10px;
+    padding: 28px; text-align: center;
+    cursor: pointer; transition: border-color .2s, background .2s;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--blue); background: var(--blue-light);
+  }
+  .upload-zone input[type=file] { display: none; }
+  .upload-zone .icon { font-size: 2.2rem; margin-bottom: 8px; }
+  .upload-zone p { color: var(--gray); font-size: .88rem; }
+  .upload-zone strong { color: var(--blue); }
+  .file-info { margin-top: 10px; font-size: .85rem; color: var(--green); font-weight: 600; }
+
+  /* ── Results tables ── */
+  .result-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  .result-table th {
+    background: var(--blue-light); color: var(--blue-dark);
+    padding: 8px 12px; text-align: right; font-weight: 700;
+    border-bottom: 2px solid var(--blue);
+  }
+  .result-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+  .result-table tr:last-child td { border-bottom: none; }
+  .result-table tr:hover td { background: var(--gray-light); }
+  .result-table .total-row td {
+    background: var(--blue-light); font-weight: 700;
+    color: var(--blue-dark); border-top: 2px solid var(--blue);
+  }
+  .result-table .shabbat-row td { background: #fef9c3; }
+
+  /* ── Payment boxes ── */
+  .payment-boxes {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px; margin-top: 4px;
+  }
+  .payment-box {
+    border-radius: 10px; padding: 14px 16px; text-align: center;
+  }
+  .payment-box .label { font-size: .78rem; font-weight: 600; opacity: .85; margin-bottom: 4px; }
+  .payment-box .amount { font-size: 1.35rem; font-weight: 800; }
+  .payment-box.p100  { background: var(--blue-light); color: var(--blue-dark); }
+  .payment-box.p200  { background: #fce7f3; color: #9d174d; }
+  .payment-box.pshab { background: var(--yellow-light); color: #92400e; }
+  .payment-box.pkon  { background: var(--green-light); color: var(--green); }
+  .payment-box.ptotal{ background: var(--blue); color: #fff; }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block; padding: 2px 9px; border-radius: 12px;
+    font-size: .75rem; font-weight: 700;
+  }
+  .badge-ok  { background: var(--green-light); color: var(--green); }
+  .badge-warn{ background: var(--yellow-light); color: #92400e; }
+  .badge-err { background: var(--red-light); color: var(--red); }
+
+  /* ── Comparison diff ── */
+  .diff-positive { color: var(--green); font-weight: 700; }
+  .diff-negative { color: var(--red); font-weight: 700; }
+  .diff-zero     { color: var(--gray); }
+
+  /* ── Analysis box ── */
+  .analysis-box {
+    background: var(--gray-light); border-right: 4px solid var(--blue);
+    border-radius: 0 8px 8px 0; padding: 16px 18px;
+    white-space: pre-wrap; font-size: .9rem; line-height: 1.7;
+  }
+
+  /* ── Status/spinner ── */
+  .spinner {
+    display: inline-block; width: 18px; height: 18px;
+    border: 3px solid rgba(255,255,255,.4);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: var(--gray); font-size: .88rem; margin-top: 8px; }
+
+  /* ── Alert ── */
+  .alert {
+    padding: 11px 15px; border-radius: 7px; margin-bottom: 14px;
+    font-size: .88rem; font-weight: 600;
+  }
+  .alert-error   { background: var(--red-light); color: var(--red); border: 1px solid #fca5a5; }
+  .alert-success { background: var(--green-light); color: var(--green); border: 1px solid #86efac; }
+  .alert-info    { background: var(--blue-light); color: var(--blue-dark); border: 1px solid #93c5fd; }
+
+  /* ── Section tabs ── */
+  .tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+  .tab {
+    padding: 8px 18px; border-radius: 20px; border: 2px solid var(--border);
+    background: #fff; cursor: pointer; font-weight: 600; font-size: .88rem;
+    transition: all .18s; color: var(--gray);
+  }
+  .tab.active { border-color: var(--blue); background: var(--blue); color: #fff; }
+
+  /* ── Hidden ── */
+  .hidden { display: none !important; }
+
+  /* ── Step indicator ── */
+  .steps { display: flex; gap: 0; margin-bottom: 24px; counter-reset: step; }
+  .step {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    position: relative; font-size: .78rem; color: var(--gray); font-weight: 600;
+  }
+  .step::before {
+    counter-increment: step;
+    content: counter(step);
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--border); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; margin-bottom: 5px; z-index: 1;
+  }
+  .step.done::before  { background: var(--green); }
+  .step.active::before{ background: var(--blue); }
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 15px; right: 50%; left: 50%;
+    height: 2px; background: var(--border);
+    width: 100%; z-index: 0;
+  }
+  .step.done + .step::after { background: var(--green); }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .text-muted { color: var(--gray); font-size: .82rem; }
+  .mt { margin-top: 14px; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .flex-end { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+  .num { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>💼 מחשבון שכר — בקרי מקורות</h1>
+    <p>צביקה לויצקי | חישוב אוטומטי לפי סידור עבודה והשוואה לתלוש</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ═══ STEP INDICATOR ═══ -->
+  <div class="steps" id="steps">
+    <div class="step active" id="step1">פרמטרים</div>
+    <div class="step" id="step2">סידור עבודה</div>
+    <div class="step" id="step3">חישוב שכר</div>
+    <div class="step" id="step4">השוואת תלוש</div>
+  </div>
+
+  <!-- ═══ א — PARAMETERS ═══ -->
+  <div class="card" id="sec-params">
+    <div class="card-header yellow">⚙️ א — פרמטרים בסיסיים</div>
+    <div class="card-body">
+      <div class="grid3">
+        <div>
+          <label>ערך שעת עבודה (₪)</label>
+          <input type="number" id="hourly_rate" value="94.19" step="0.01" min="0">
+        </div>
+        <div>
+          <label>תעריף שבת בקרים (₪)</label>
+          <input type="number" id="shabbat_rate" value="278.30" step="0.01" min="0">
+        </div>
+        <div>
+          <label>שעות כוננת חודשיות</label>
+          <input type="number" id="seniority_hours" value="15" step="0.5" min="0">
+        </div>
+        <div>
+          <label>ימי חופשה שהכנסתי</label>
+          <input type="number" id="vacation_days" value="0" step="1" min="0">
+        </div>
+        <div>
+          <label>ימי מחלה שהכנסתי</label>
+          <input type="number" id="sick_days" value="0" step="1" min="0">
+        </div>
+        <div>
+          <label>שם עובד (לחיפוש בסידור)</label>
+          <input type="text" id="employee_name" value="צביקה לויצקי" placeholder="שם מלא...">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ב — SHIFTS INPUT ═══ -->
+  <div class="card" id="sec-shifts">
+    <div class="card-header">📋 ב — ספר משמרות</div>
+    <div class="card-body">
+
+      <!-- Upload or manual -->
+      <div class="tabs">
+        <div class="tab active" id="tab-upload" onclick="switchTab('upload')">📎 העלאת קובץ Word</div>
+        <div class="tab" id="tab-manual" onclick="switchTab('manual')">✏️ הזנה ידנית</div>
+      </div>
+
+      <!-- Upload panel -->
+      <div id="panel-upload">
+        <div class="upload-zone" id="dropzone" onclick="document.getElementById('schedule_file').click()">
+          <div class="icon">📄</div>
+          <p><strong>לחץ לבחירה</strong> או גרור קובץ Word (.docx) עם סידור העבודה</p>
+          <p class="file-info hidden" id="schedule_filename"></p>
+          <input type="file" id="schedule_file" accept=".docx" onchange="onScheduleFile(this)">
+        </div>
+        <div class="flex-end">
+          <button class="btn btn-primary" id="btn-parse" onclick="parseSchedule()" disabled>
+            🔍 נתח סידור עם AI
+          </button>
+        </div>
+        <div id="parse-status" class="hidden loading-text">⏳ מנתח סידור עבודה...</div>
+        <div id="parse-error" class="hidden"></div>
+      </div>
+
+      <!-- Manual panel -->
+      <div id="panel-manual" class="hidden">
+        <p class="text-muted" style="margin-bottom:14px">הזן את מספר המשמרות מכל סוג לחודש זה:</p>
+        <div class="shift-grid" id="shift-inputs"></div>
+      </div>
+
+      <!-- Parsed result preview -->
+      <div id="parsed-preview" class="hidden mt">
+        <div class="alert alert-success" id="parsed-summary"></div>
+        <div style="overflow-x:auto">
+          <table class="result-table" id="parsed-table">
+            <thead>
+              <tr><th>סוג משמרת</th><th>כמות</th><th>ש"ג 100%</th><th>ש"ג 200%</th><th>שבת בקרים</th></tr>
+            </thead>
+            <tbody id="parsed-tbody"></tbody>
+          </table>
+        </div>
+        <div class="flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="editParsed()">✏️ ערוך ידנית</button>
+          <button class="btn btn-success" onclick="runCalculation()">🧮 חשב שכר</button>
+        </div>
+      </div>
+
+      <div id="shift-calc-btn" class="flex-end hidden">
+        <button class="btn btn-success" onclick="runCalculation()">🧮 חשב שכר</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ ג + ד — CALCULATION RESULTS ═══ -->
+  <div class="card hidden" id="sec-results">
+    <div class="card-header green">🧮 ג+ד — חישוב שעות ותשלומים</div>
+    <div class="card-body">
+
+      <!-- Hours summary -->
+      <h3 style="font-size:.93rem;color:var(--blue-dark);margin-bottom:10px">ג — סיכום שעות גמר</h3>
+      <div style="overflow-x:auto">
+        <table class="result-table" id="hours-table">
+          <thead>
+            <tr><th>רכיב</th><th>ש"ג 100%</th><th>ש"ג 200%</th><th>שבת בקרים</th></tr>
+          </thead>
+          <tbody id="hours-tbody"></tbody>
+        </table>
+      </div>
+
+      <hr>
+
+      <!-- Shift breakdown -->
+      <h3 style="font-size:.93rem;color:var(--blue-dark);margin:10px 0">פירוט לפי סוג משמרת</h3>
+      <div style="overflow-x:auto">
+        <table class="result-table" id="breakdown-table">
+          <thead>
+            <tr><th>משמרת</th><th>כמות</th><th>ש"ג 100%</th><th>ש"ג 200%</th><th>שבת בקרים</th></tr>
+          </thead>
+          <tbody id="breakdown-tbody"></tbody>
+        </table>
+      </div>
+
+      <hr>
+
+      <!-- Payments -->
+      <h3 style="font-size:.93rem;color:var(--blue-dark);margin:10px 0">ד — חישוב תשלומים</h3>
+      <div class="payment-boxes" id="payment-boxes"></div>
+
+    </div>
+  </div>
+
+  <!-- ═══ ה — PAYSLIP COMPARISON ═══ -->
+  <div class="card hidden" id="sec-compare">
+    <div class="card-header gray">📑 ה — השוואה לתלוש שכר</div>
+    <div class="card-body">
+
+      <div class="upload-zone" id="payslip-dropzone" onclick="document.getElementById('payslip_file').click()">
+        <div class="icon">🧾</div>
+        <p><strong>לחץ לבחירה</strong> או גרור תלוש שכר (JPG / PNG / PDF)</p>
+        <p class="file-info hidden" id="payslip_filename"></p>
+        <input type="file" id="payslip_file" accept=".jpg,.jpeg,.png,.pdf" onchange="onPayslipFile(this)">
+      </div>
+      <div class="flex-end">
+        <button class="btn btn-primary" id="btn-analyze" onclick="analyzePayslip()" disabled>
+          🔍 נתח תלוש עם AI
+        </button>
+      </div>
+      <div id="payslip-status" class="hidden loading-text">⏳ מנתח תלוש שכר...</div>
+      <div id="payslip-error" class="hidden"></div>
+
+      <!-- Comparison table -->
+      <div id="comparison-result" class="hidden">
+        <hr>
+        <h3 style="font-size:.93rem;color:var(--blue-dark);margin-bottom:10px">טבלת השוואה</h3>
+        <div style="overflow-x:auto">
+          <table class="result-table" id="compare-table">
+            <thead>
+              <tr><th>רכיב</th><th>חישוב מסידור</th><th>מהתלוש</th><th>הפרש</th><th>סטטוס</th></tr>
+            </thead>
+            <tbody id="compare-tbody"></tbody>
+          </table>
+        </div>
+        <hr>
+        <h3 style="font-size:.93rem;color:var(--blue-dark);margin:10px 0">ניתוח AI</h3>
+        <div id="compare-status" class="hidden loading-text">⏳ מנתח הפרשים...</div>
+        <div class="analysis-box hidden" id="analysis-box"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+const state = {
+  scheduleFile: null,
+  payslipFile: null,
+  parsedShifts: {},
+  calcResult: null,
+  payslipData: null,
+};
+
+// Shift definitions (mirroring Python)
+const SHIFTS = [
+  { key: 'morning_weekday',                    label: 'בוקר חול',                    shabbat: false },
+  { key: 'morning_shabbat',                    label: 'בוקר שבת',                    shabbat: true  },
+  { key: 'afternoon_weekday',                  label: 'צהריים חול',                   shabbat: false },
+  { key: 'afternoon_friday',                   label: 'צהריים שישי',                  shabbat: false },
+  { key: 'afternoon_shabbat',                  label: 'צהריים שבת',                   shabbat: true  },
+  { key: 'night_weekday',                      label: 'לילה חול',                    shabbat: false },
+  { key: 'night_friday_shabbat',               label: 'לילה שישי/שבת',               shabbat: true  },
+  { key: 'double_morning_afternoon_weekday',   label: 'כפולה בוקר+צהריים חול',       shabbat: false },
+  { key: 'double_morning_afternoon_shabbat',   label: 'כפולה בוקר+צהריים שבת',       shabbat: true  },
+  { key: 'double_afternoon_night_weekday',     label: 'כפולה צהריים+לילה חול',       shabbat: false },
+  { key: 'double_afternoon_night_friday_shabbat', label: 'כפולה צהריים+לילה שישי/שבת', shabbat: true },
+];
+
+const SHIFT_HOURS = {
+  morning_weekday:                    { h100: 0.5,  h200: 0 },
+  morning_shabbat:                    { h100: 0,    h200: 8.5 },
+  afternoon_weekday:                  { h100: 0.5,  h200: 0 },
+  afternoon_friday:                   { h100: 0,    h200: 4.5 },
+  afternoon_shabbat:                  { h100: 0,    h200: 8.5 },
+  night_weekday:                      { h100: 0,    h200: 8.5 },
+  night_friday_shabbat:               { h100: 0,    h200: 8.5 },
+  double_morning_afternoon_weekday:   { h100: 4.33, h200: 0 },
+  double_morning_afternoon_shabbat:   { h100: 0,    h200: 12.83 },
+  double_afternoon_night_weekday:     { h100: 4.33, h200: 0 },
+  double_afternoon_night_friday_shabbat: { h100: 0, h200: 13 },
+};
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  buildManualInputs();
+  setupDropzone('dropzone', 'schedule_file');
+  setupDropzone('payslip-dropzone', 'payslip_file');
+});
+
+function buildManualInputs() {
+  const container = document.getElementById('shift-inputs');
+  container.innerHTML = '';
+  SHIFTS.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'shift-item' + (s.shabbat ? ' shabbat' : '');
+    div.innerHTML = `<span>${s.label}</span>
+      <input type="number" id="manual_${s.key}" value="0" min="0" step="1"
+             onchange="onManualChange()">`;
+    container.appendChild(div);
+  });
+}
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-upload').classList.toggle('active', tab === 'upload');
+  document.getElementById('tab-manual').classList.toggle('active', tab === 'manual');
+  document.getElementById('panel-upload').classList.toggle('hidden', tab !== 'upload');
+  document.getElementById('panel-manual').classList.toggle('hidden', tab === 'upload');
+  document.getElementById('parsed-preview').classList.add('hidden');
+  document.getElementById('shift-calc-btn').classList.toggle('hidden', tab !== 'manual');
+}
+
+function onManualChange() {
+  const counts = getManualCounts();
+  const hasAny = Object.values(counts).some(v => v > 0);
+  document.getElementById('shift-calc-btn').classList.toggle('hidden', !hasAny);
+}
+
+// ─── Drag & drop ─────────────────────────────────────────────────────────────
+function setupDropzone(zoneId, inputId) {
+  const zone = document.getElementById(zoneId);
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) {
+      document.getElementById(inputId).files = e.dataTransfer.files;
+      document.getElementById(inputId).dispatchEvent(new Event('change'));
+    }
+  });
+}
+
+// ─── File handlers ────────────────────────────────────────────────────────────
+function onScheduleFile(input) {
+  const f = input.files[0];
+  if (!f) return;
+  state.scheduleFile = f;
+  const el = document.getElementById('schedule_filename');
+  el.textContent = '📎 ' + f.name;
+  el.classList.remove('hidden');
+  document.getElementById('btn-parse').disabled = false;
+  document.getElementById('parse-error').classList.add('hidden');
+}
+
+function onPayslipFile(input) {
+  const f = input.files[0];
+  if (!f) return;
+  state.payslipFile = f;
+  const el = document.getElementById('payslip_filename');
+  el.textContent = '📎 ' + f.name;
+  el.classList.remove('hidden');
+  document.getElementById('btn-analyze').disabled = false;
+  document.getElementById('payslip-error').classList.add('hidden');
+}
+
+// ─── Parse schedule ────────────────────────────────────────────────────────────
+async function parseSchedule() {
+  const btn = document.getElementById('btn-parse');
+  const status = document.getElementById('parse-status');
+  const errEl = document.getElementById('parse-error');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> מנתח...';
+  status.classList.remove('hidden');
+  errEl.classList.add('hidden');
+  document.getElementById('parsed-preview').classList.add('hidden');
+
+  const fd = new FormData();
+  fd.append('file', state.scheduleFile);
+  fd.append('employee_name', document.getElementById('employee_name').value.trim());
+
+  try {
+    const res = await fetch('/api/parse-schedule', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'שגיאה לא ידועה');
+
+    state.parsedShifts = data.shift_counts || {};
+    showParsedPreview(data);
+    setStep(2);
+  } catch (e) {
+    showError('parse-error', e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔍 נתח סידור עם AI';
+    status.classList.add('hidden');
+  }
+}
+
+function showParsedPreview(data) {
+  const summary = document.getElementById('parsed-summary');
+  const name = data.employee_name ? ` — ${data.employee_name}` : '';
+  const month = data.month ? ` (${data.month})` : '';
+  summary.textContent = `✅ זוהו ${data.total_shifts} משמרות${name}${month}`;
+
+  const tbody = document.getElementById('parsed-tbody');
+  tbody.innerHTML = '';
+
+  let anyShift = false;
+  SHIFTS.forEach(s => {
+    const cnt = (data.shift_counts || {})[s.key] || 0;
+    if (cnt === 0) return;
+    anyShift = true;
+    const h = SHIFT_HOURS[s.key];
+    const h100 = (h.h100 * cnt).toFixed(2);
+    const h200 = (h.h200 * cnt).toFixed(2);
+    const shab = s.shabbat ? cnt : 0;
+    tbody.innerHTML += `<tr class="${s.shabbat ? 'shabbat-row' : ''}">
+      <td>${s.label}</td>
+      <td class="num">${cnt}</td>
+      <td class="num">${h100 > 0 ? h100 : '—'}</td>
+      <td class="num">${h200 > 0 ? h200 : '—'}</td>
+      <td class="num">${shab > 0 ? shab : '—'}</td>
+    </tr>`;
+  });
+  if (!anyShift) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray)">לא נמצאו משמרות</td></tr>';
+  }
+
+  // Sync to manual inputs
+  SHIFTS.forEach(s => {
+    const inp = document.getElementById(`manual_${s.key}`);
+    if (inp) inp.value = (data.shift_counts || {})[s.key] || 0;
+  });
+
+  document.getElementById('parsed-preview').classList.remove('hidden');
+}
+
+function editParsed() {
+  switchTab('manual');
+  onManualChange();
+}
+
+// ─── Calculation ──────────────────────────────────────────────────────────────
+function getManualCounts() {
+  const counts = {};
+  SHIFTS.forEach(s => {
+    const v = parseInt(document.getElementById(`manual_${s.key}`)?.value || 0);
+    counts[s.key] = isNaN(v) ? 0 : v;
+  });
+  return counts;
+}
+
+function getParams() {
+  return {
+    hourly_rate:    parseFloat(document.getElementById('hourly_rate').value)    || 94.19,
+    shabbat_rate:   parseFloat(document.getElementById('shabbat_rate').value)   || 278.30,
+    seniority_hours:parseFloat(document.getElementById('seniority_hours').value)|| 15,
+    vacation_days:  parseFloat(document.getElementById('vacation_days').value)  || 0,
+    sick_days:      parseFloat(document.getElementById('sick_days').value)      || 0,
+  };
+}
+
+async function runCalculation() {
+  const shiftCounts = Object.keys(state.parsedShifts).length > 0
+    ? state.parsedShifts : getManualCounts();
+
+  try {
+    const res = await fetch('/api/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shift_counts: shiftCounts, params: getParams() }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    state.calcResult = data;
+    showCalcResults(data);
+    setStep(3);
+    document.getElementById('sec-compare').classList.remove('hidden');
+  } catch (e) {
+    alert('שגיאה בחישוב: ' + e.message);
+  }
+}
+
+function fmt(n) { return Number(n).toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+function showCalcResults(data) {
+  const sec = document.getElementById('sec-results');
+  sec.classList.remove('hidden');
+
+  const hs = data.hours_summary;
+
+  // Hours table
+  const htbody = document.getElementById('hours-tbody');
+  htbody.innerHTML = `
+    <tr><td>ממשמרות (100%)</td><td class="num">${hs.shift_hours_100}</td><td>—</td><td>—</td></tr>
+    <tr><td>כוננות חודשית</td><td class="num">${hs.seniority_hours}</td><td>—</td><td>—</td></tr>
+    <tr><td>ימי חופשה (×2.25)</td><td class="num">${hs.vacation_hours}</td><td>—</td><td>—</td></tr>
+    <tr><td>משמרות שבת/לילה (200%)</td><td>—</td><td class="num">${hs.shift_hours_200}</td><td>—</td></tr>
+    <tr><td>שבת בקרים</td><td>—</td><td>—</td><td class="num">${hs.shabbat_visits}</td></tr>
+    <tr class="total-row">
+      <td>סה"כ</td>
+      <td class="num">${hs.total_hours_100}</td>
+      <td class="num">${hs.total_hours_200}</td>
+      <td class="num">${hs.shabbat_visits}</td>
+    </tr>`;
+
+  // Breakdown table
+  const btbody = document.getElementById('breakdown-tbody');
+  btbody.innerHTML = '';
+  (data.breakdown || []).forEach(r => {
+    const shab = r.shabbat_visits > 0;
+    btbody.innerHTML += `<tr class="${shab ? 'shabbat-row' : ''}">
+      <td>${r.type}</td>
+      <td class="num">${r.count}</td>
+      <td class="num">${r.hours_100 > 0 ? r.hours_100 : '—'}</td>
+      <td class="num">${r.hours_200 > 0 ? r.hours_200 : '—'}</td>
+      <td class="num">${r.shabbat_visits > 0 ? r.shabbat_visits : '—'}</td>
+    </tr>`;
+  });
+  if (!data.breakdown || data.breakdown.length === 0) {
+    btbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray)">אין משמרות</td></tr>';
+  }
+
+  // Payment boxes
+  const p = data.payments;
+  document.getElementById('payment-boxes').innerHTML = `
+    <div class="payment-box p100">
+      <div class="label">תשלום ש"ג 100%</div>
+      <div class="amount num">₪${fmt(p.payment_100)}</div>
+    </div>
+    <div class="payment-box p200">
+      <div class="label">תשלום ש"ג 200%</div>
+      <div class="amount num">₪${fmt(p.payment_200)}</div>
+    </div>
+    <div class="payment-box pshab">
+      <div class="label">שבת בקרים</div>
+      <div class="amount num">₪${fmt(p.shabbat_payment)}</div>
+    </div>
+    <div class="payment-box pkon">
+      <div class="label">כוננות חודשית</div>
+      <div class="amount num">₪${fmt(p.konenut_payment)}</div>
+    </div>
+    <div class="payment-box ptotal">
+      <div class="label">סה"כ תוספות משמרות</div>
+      <div class="amount num">₪${fmt(p.total)}</div>
+    </div>`;
+
+  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── Payslip analysis ─────────────────────────────────────────────────────────
+async function analyzePayslip() {
+  const btn = document.getElementById('btn-analyze');
+  const status = document.getElementById('payslip-status');
+  const errEl = document.getElementById('payslip-error');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> מנתח...';
+  status.classList.remove('hidden');
+  errEl.classList.add('hidden');
+  document.getElementById('comparison-result').classList.add('hidden');
+
+  const fd = new FormData();
+  fd.append('file', state.payslipFile);
+
+  try {
+    const res = await fetch('/api/analyze-payslip', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'שגיאה');
+    state.payslipData = data;
+    buildComparisonTable(data);
+    await runComparison();
+    setStep(4);
+  } catch (e) {
+    showError('payslip-error', e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔍 נתח תלוש עם AI';
+    status.classList.add('hidden');
+  }
+}
+
+function buildComparisonTable(payslip) {
+  if (!state.calcResult) return;
+  const cp = state.calcResult.payments;
+  const pp = payslip.components || {};
+
+  const rows = [
+    { label: 'ש"ג 100%',    calc: cp.payment_100,    payslip: pp.payment_100    },
+    { label: 'ש"ג 200%',    calc: cp.payment_200,    payslip: pp.payment_200    },
+    { label: 'שבת בקרים',  calc: cp.shabbat_payment, payslip: pp.shabbat_payment },
+    { label: 'כוננות',      calc: cp.konenut_payment, payslip: pp.konenut_payment },
+    { label: 'סה"כ תוספות', calc: cp.total,           payslip: pp.total_shift_extras },
+  ];
+
+  const tbody = document.getElementById('compare-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const cVal = Number(r.calc || 0);
+    const pVal = Number(r.payslip || 0);
+    const diff = pVal - cVal;
+    const absDiff = Math.abs(diff);
+    const pVal_str = pVal === 0 ? '—' : `₪${fmt(pVal)}`;
+    let diffStr, badge, cls;
+    if (absDiff < 1) {
+      diffStr = '✓';
+      badge = '<span class="badge badge-ok">תקין</span>';
+      cls = 'diff-zero';
+    } else if (diff > 0) {
+      diffStr = `+₪${fmt(absDiff)}`;
+      badge = '<span class="badge badge-warn">יתרה לטובתך</span>';
+      cls = 'diff-positive';
+    } else {
+      diffStr = `-₪${fmt(absDiff)}`;
+      badge = '<span class="badge badge-err">חסר</span>';
+      cls = 'diff-negative';
+    }
+
+    const isTotal = r.label.includes('סה"כ');
+    tbody.innerHTML += `<tr ${isTotal ? 'class="total-row"' : ''}>
+      <td>${r.label}</td>
+      <td class="num">₪${fmt(cVal)}</td>
+      <td class="num">${pVal_str}</td>
+      <td class="num ${cls}">${diffStr}</td>
+      <td>${badge}</td>
+    </tr>`;
+  });
+
+  document.getElementById('comparison-result').classList.remove('hidden');
+}
+
+async function runComparison() {
+  if (!state.calcResult || !state.payslipData) return;
+  const statusEl = document.getElementById('compare-status');
+  const boxEl    = document.getElementById('analysis-box');
+  statusEl.classList.remove('hidden');
+  boxEl.classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/compare', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ calc_result: state.calcResult, payslip_data: state.payslipData }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    boxEl.textContent = data.analysis;
+    boxEl.classList.remove('hidden');
+  } catch (e) {
+    boxEl.textContent = 'שגיאה בניתוח: ' + e.message;
+    boxEl.classList.remove('hidden');
+  } finally {
+    statusEl.classList.add('hidden');
+  }
+
+  document.getElementById('sec-compare').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function setStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById(`step${i}`);
+    el.classList.remove('active', 'done');
+    if (i < n) el.classList.add('done');
+    else if (i === n) el.classList.add('active');
+  }
+}
+
+function showError(elId, msg) {
+  const el = document.getElementById(elId);
+  el.className = 'alert alert-error';
+  el.textContent = '❌ ' + msg;
+  el.classList.remove('hidden');
+}
+</script>
+
+</body>
+</html>
