@@ -1688,7 +1688,11 @@ function extractWorkDates(text) {
   }
 
   const sampleLine = text.split('\n').find(l=>/\d{1,2}.*[א-תà-ú].*\d{1,2}:\d{2}/.test(l)) || 'לא נמצא';
-  dbgP(`חילוץ תאריכים: ${found.size} ימי עבודה | hoursRaw=${hoursRawText?hoursRawText.length:'null'} | srcLen=${text.length} | שורה: "${sampleLine}"`);
+  // Debug: show lines containing '/' to understand date format
+  const slashLines = text.split('\n').filter(l=>l.includes('/')).slice(0,8);
+  dbgP(`חילוץ תאריכים: ${found.size} ימי עבודה | hoursRaw=${hoursRawText?hoursRawText.length:'null'} | srcLen=${text.length}`);
+  dbgP(`שורות עם /:\n${slashLines.map((l,i)=>`  [${i}]: "${l}"`).join('\n')}`);
+  dbgP(`300 תווים ראשונים של מקור:\n${text.slice(0,300)}`);
   return found;
 }
 
