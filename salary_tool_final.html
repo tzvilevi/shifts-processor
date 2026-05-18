@@ -587,7 +587,9 @@ function setStep(n) {
 async function loadWord(file) {
   if (!file) return;
   // Reset comparison data when loading a new schedule
-  slip=null; hoursSlip=null; slipRawText=null; hoursRawText=null;
+  slip=null; hoursSlip=null; slipRawText=null;
+  // NOTE: hoursRawText is intentionally NOT reset here —
+  // it is set after Word load in the library flow, and manually loaded hours survive a schedule reload.
   document.getElementById('compareCard').classList.add('hidden');
   document.getElementById('dzP').classList.remove('done');
   document.getElementById('dzPsub').textContent='לחץ או גרור';
@@ -1686,7 +1688,7 @@ function extractWorkDates(text) {
   }
 
   const sampleLine = text.split('\n').find(l=>/\d{1,2}.*[א-תà-ú].*\d{1,2}:\d{2}/.test(l)) || 'לא נמצא';
-  dbgP(`חילוץ תאריכים: ${found.size} ימי עבודה | שורה לדוגמה: "${sampleLine}"`);
+  dbgP(`חילוץ תאריכים: ${found.size} ימי עבודה | hoursRaw=${hoursRawText?hoursRawText.length:'null'} | srcLen=${text.length} | שורה: "${sampleLine}"`);
   return found;
 }
 
@@ -2324,6 +2326,7 @@ async function loadLibraryFiles(){
   document.getElementById('compareCard').classList.add('hidden');
   document.getElementById('dzW').classList.remove('done');
   document.getElementById('dzWsub').textContent='docx — לחץ או גרור';
+  console.log('[lib] word=',libWordFile?.name,'hours=',libHoursFile?.name,'pdf=',libPdfFile?.name);
   document.getElementById('dzP').classList.remove('done');
   document.getElementById('dzPsub').textContent='לחץ או גרור';
   document.getElementById('st1').innerHTML='';
