@@ -1443,7 +1443,12 @@ function renderCompare(){
       } else {
         dcHtml += `<div style="font-size:12px;color:#16a34a">אין ימי עבודה עודפים.</div>`;
       }
-      dcHtml += `</div></div></details>`;
+      dcHtml += `</div></div>
+        <details style="border-top:1px solid #f3f4f6;background:#f9fafb">
+          <summary style="padding:8px 14px;cursor:pointer;font-size:11px;color:#6b7280">🔍 טקסט גולמי שחולץ מהגיליון (לאבחון)</summary>
+          <pre id="rawPdfSnippet" style="margin:0;padding:8px 14px;font-size:10px;direction:ltr;text-align:left;white-space:pre-wrap;max-height:180px;overflow-y:auto;background:#f9fafb">${(slipRawText||'').slice(0,800).replace(/</g,'&lt;')}</pre>
+        </details>
+      </details>`;
 
       dcPanel.innerHTML = dcHtml;
       dcPanel.style.display = '';
@@ -1602,40 +1607,51 @@ function extractWorkDates(text) {
   // Keywords that mark absence lines (not actual work)
   const ABSENCE_RE = /חופשה|מחלה|מנוחה|שבתון/;
 
-  // ── Pattern 1: Israeli Hilan attendance report format ──
-  // Each row starts: "MM DD/HebrewDay  [times or absence]"
-  // Example: "02 16/ב 5:44 14:35 ..."  |  "03 01/א חופשה 8:24"
+  const ABSENCE_RE_LOCAL = /חופשה|מחלה|מנוחה|שבתון/;
+  let m;
+
   text.split('\n').forEach(line => {
-    const mDate = line.match(/\b(\d{1,2}) (\d{1,2})\/[א-ת]/);
-    if(!mDate) return;
-    const mo = parseInt(mDate[1]), d = parseInt(mDate[2]);
-    if(d < 1 || d > 31 || mo < 1 || mo > 12) return;
-    const k = `${String(d).padStart(2,'0')}-${String(mo).padStart(2,'0')}`;
-    if(!lookup.has(k)) return;
-    // Only count as work day if line has clock-in times AND is not an absence
-    const hasTime = /\b\d{1,2}:\d{2}\b/.test(line);
-    const isAbsence = ABSENCE_RE.test(line);
-    if(hasTime && !isAbsence) found.add(lookup.get(k));
+    const hasTime   = /\b\d{1,2}:\d{2}\b/.test(line);
+    const isAbsence = ABSENCE_RE_LOCAL.test(line);
+
+    // ── Pattern A: LTR order "MM DD/Hebrew" e.g. "02 16/ב" ──
+    let md = line.match(/\b(\d{1,2})\s+(\d{1,2})\s*\/\s*[א-ת]/);
+    if(md) {
+      const mo = parseInt(md[1]), d = parseInt(md[2]);
+      if(d>=1&&d<=31&&mo>=1&&mo<=12) {
+        const k=`${String(d).padStart(2,'0')}-${String(mo).padStart(2,'0')}`;
+        if(lookup.has(k)&&hasTime&&!isAbsence) found.add(lookup.get(k));
+        return;
+      }
+    }
+    // ── Pattern B: RTL order (PDF.js may reverse) "Hebrew/ DD MM" e.g. "ב/ 16 02" ──
+    md = line.match(/[א-ת]\s*\/\s*(\d{1,2})\s+(\d{1,2})\b/);
+    if(md) {
+      const d = parseInt(md[1]), mo = parseInt(md[2]);
+      if(d>=1&&d<=31&&mo>=1&&mo<=12) {
+        const k=`${String(d).padStart(2,'0')}-${String(mo).padStart(2,'0')}`;
+        if(lookup.has(k)&&hasTime&&!isAbsence) found.add(lookup.get(k));
+      }
+    }
   });
 
-  // ── Pattern 2: Standard DD/MM format (payslip or other docs) ──
+  // ── Pattern C: Standard DD/MM format ──
   const re2 = /\b(\d{1,2})\/(\d{1,2})(?:\/(?:\d{2}|\d{4}))?\b/g;
-  let m;
   while((m = re2.exec(text)) !== null) {
     const d = parseInt(m[1]), mo = parseInt(m[2]);
-    if(d < 1 || d > 31 || mo < 1 || mo > 12) continue;
-    const k = `${String(d).padStart(2,'0')}-${String(mo).padStart(2,'0')}`;
+    if(d<1||d>31||mo<1||mo>12) continue;
+    const k=`${String(d).padStart(2,'0')}-${String(mo).padStart(2,'0')}`;
     if(lookup.has(k)) found.add(lookup.get(k));
   }
 
-  // ── Pattern 3: YYYY-MM-DD ──
+  // ── Pattern D: YYYY-MM-DD ──
   const re3 = /\b(20\d{2})[-\/](\d{2})[-\/](\d{2})\b/g;
   while((m = re3.exec(text)) !== null) {
-    const ds = `${m[1]}-${m[2]}-${m[3]}`;
+    const ds=`${m[1]}-${m[2]}-${m[3]}`;
     if(shifts.some(sh=>sh.dateStr===ds)) found.add(ds);
   }
 
-  dbgP(`חילוץ תאריכים: ${found.size} ימי עבודה תואמים מ-${lookup.size/2} ימי סידור`);
+  dbgP(`חילוץ תאריכים: ${found.size} ימי עבודה | שורה לדוגמה: "${text.split('\n').find(l=>/\d{1,2}.*[א-ת].*\d{1,2}:\d{2}/.test(l))||'לא נמצא'}"`)
   return found;
 }
 
