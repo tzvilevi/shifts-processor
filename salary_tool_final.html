@@ -474,6 +474,7 @@ button.green:hover:not(:disabled){background:#0f6530;}
     <summary>🔎 ניתוח פערים מפורט</summary>
     <div id="analysis" style="padding:10px 0;font-size:13px;line-height:1.8"></div>
   </details>
+  <div id="daysComparePanel" style="display:none;margin-top:14px"></div>
   <details class="mt" id="dbgPayslip" style="display:none">
     <summary>🛠 יומן ניתוח תלוש</summary>
     <div class="dbg" id="dbgPlog"></div>
@@ -1349,6 +1350,77 @@ function renderCompare(){
     }
   }
   document.getElementById('analysis').innerHTML=analysis;
+
+  // ── Work-day cross-reference panel ───────────────────────────────────────
+  const dcPanel = document.getElementById('daysComparePanel');
+  if(slipRawText && shifts && shifts.length) {
+    const schedDates = new Set(shifts.filter(sh=>sh.date).map(sh=>sh.dateStr));
+    const sheetDates = extractWorkDates(slipRawText);
+
+    if(sheetDates.size > 0) {
+      const inSchedNotSheet = [...schedDates].filter(d=>!sheetDates.has(d)).sort();
+      const inSheetNotSched = [...sheetDates].filter(d=>!schedDates.has(d)).sort();
+      const matched = [...schedDates].filter(d=>sheetDates.has(d)).length;
+
+      let dcHtml = `<details open style="border:1px solid #fca5a5;border-radius:10px;overflow:hidden">
+        <summary style="background:#fef2f2;padding:10px 14px;cursor:pointer;font-weight:700;font-size:14px;list-style:none;display:flex;align-items:center;gap:8px">
+          📅 השוואת ימי עבודה: סידור ↔ גיליון מנותח
+          <span style="margin-right:auto;font-weight:400;font-size:12px;color:#6b7280">
+            ${schedDates.size} ימי סידור | ${sheetDates.size} ימי גיליון | ${matched} תואמים
+          </span>
+        </summary>
+        <div style="padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;background:#fff">`;
+
+      // Left: missing from sheet
+      dcHtml += `<div>
+        <div style="font-weight:700;font-size:13px;color:${inSchedNotSheet.length?'#dc2626':'#16a34a'};margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid ${inSchedNotSheet.length?'#fca5a5':'#86efac'}">
+          ${inSchedNotSheet.length ? `⚠️ בסידור — חסרים בגיליון (${inSchedNotSheet.length})` : '✅ כל ימי הסידור בגיליון'}
+        </div>`;
+      if(inSchedNotSheet.length) {
+        dcHtml += `<div style="font-size:12px;color:#7f1d1d;line-height:2">`;
+        inSchedNotSheet.forEach(d => {
+          const sh = shifts.find(s=>s.dateStr===d);
+          const lbl = sh ? (LABELS[sh.type]||sh.type) : '?';
+          const day = sh ? sh.dayLetter : '?';
+          dcHtml += `<div style="display:flex;gap:6px;align-items:center;padding:2px 6px;background:#fef2f2;border-radius:4px;margin-bottom:3px">
+            <span style="font-weight:700;min-width:90px">${d}</span>
+            <span style="color:#9ca3af">${day}</span>
+            <span style="color:#dc2626">${lbl}</span>
+          </div>`;
+        });
+        dcHtml += `</div><div style="margin-top:8px;font-size:11px;color:#dc2626;font-weight:600">→ משמרות אלו לא נכנסו לחישוב השכר!</div>`;
+      } else {
+        dcHtml += `<div style="font-size:12px;color:#16a34a">כל ${matched} ימי הסידור מופיעים בגיליון.</div>`;
+      }
+      dcHtml += `</div>`;
+
+      // Right: in sheet but not schedule
+      dcHtml += `<div>
+        <div style="font-weight:700;font-size:13px;color:${inSheetNotSched.length?'#d97706':'#16a34a'};margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid ${inSheetNotSched.length?'#fde68a':'#86efac'}">
+          ${inSheetNotSched.length ? `⚠️ בגיליון — לא בסידור (${inSheetNotSched.length})` : '✅ אין ימים עודפים בגיליון'}
+        </div>`;
+      if(inSheetNotSched.length) {
+        dcHtml += `<div style="font-size:12px;color:#78350f;line-height:2">`;
+        inSheetNotSched.forEach(d => {
+          dcHtml += `<div style="display:flex;gap:6px;align-items:center;padding:2px 6px;background:#fffbeb;border-radius:4px;margin-bottom:3px">
+            <span style="font-weight:700">${d}</span>
+            <span style="color:#d97706">לא מזוהה בסידור</span>
+          </div>`;
+        });
+        dcHtml += `</div><div style="margin-top:8px;font-size:11px;color:#d97706;font-weight:600">→ ימים אלו בגיליון אך לא בסידור — בדוק.</div>`;
+      } else {
+        dcHtml += `<div style="font-size:12px;color:#16a34a">אין ימי עבודה עודפים.</div>`;
+      }
+      dcHtml += `</div></div></details>`;
+
+      dcPanel.innerHTML = dcHtml;
+      dcPanel.style.display = '';
+    } else {
+      dcPanel.style.display = 'none';
+    }
+  } else {
+    dcPanel.style.display = 'none';
+  }
 
   // Show AI card
   showAiCard();
