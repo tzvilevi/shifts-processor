@@ -1671,6 +1671,25 @@ function extractWorkDates(text) {
     }
   });
 
+  // ── Pattern SP: Hilan spaced-glyph format ──
+  // PDF.js extracts each glyph individually and sorts by x-coordinate.
+  // Numbers are stored LTR so their digits are reversed: "02"→"2 0", "16"→"6 1"
+  // Hebrew chars are stored RTL so they appear in reading order (with spaces).
+  // Example: "02 16/ב 5:44 14:35" → "2 0 / 6 1 ב 4 4 : 5 5 3 : 4 1"
+  const reSP = new RegExp(`(\\d)\\s+(\\d)\\s*\\/\\s*(\\d)(?:\\s+(\\d))?\\s*(${HE})`);
+  const ABSENCE_SP_RE = /[חç]\s+[וå]\s+[פô]\s+[שù]\s+[הä]|[מî]\s+[חç]\s+[לë]\s+[הä]|[מî]\s+[נð]\s+[וå]\s+[חç]\s+[הä]/;
+  text.split('\n').forEach(line => {
+    const mdSP = line.match(reSP);
+    if(!mdSP) return;
+    const mo = parseInt(mdSP[2] + mdSP[1]);
+    const d  = mdSP[4] ? parseInt(mdSP[4] + mdSP[3]) : parseInt(mdSP[3]);
+    if(d<1||d>31||mo<1||mo>12) return;
+    const k=`${String(d).padStart(2,'0')}-${String(mo).padStart(2,'0')}`;
+    if(!lookup.has(k)) return;
+    const isAbsenceSP = ABSENCE_SP_RE.test(line) || ABSENCE_RE_LOCAL.test(line) || ABSENCE_WORDS.test(line);
+    if(!isAbsenceSP) found.add(lookup.get(k));
+  });
+
   // ── Pattern C: Standard DD/MM format ──
   const re2 = /\b(\d{1,2})\/(\d{1,2})(?:\/(?:\d{2}|\d{4}))?\b/g;
   while((m = re2.exec(text)) !== null) {
