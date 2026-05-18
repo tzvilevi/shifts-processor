@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מחשבון שכר — צביקה לויצקי</title>
+<style>
+:root {
+  --blue:#1a56db; --blue-d:#1241a8; --blue-l:#e8f0fe;
+  --green:#0b7a3e; --green-l:#d4edda;
+  --red:#c0392b;   --red-l:#fde8e8;
+  --amber:#b45309; --amber-l:#fff8e1;
+  --gray:#6b7280;  --gray-l:#f3f4f6;
+  --border:#d1d5db; --radius:10px;
+  --shadow:0 1px 5px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#1f2937;font-size:15px;line-height:1.6}
+
+/* ── Header ── */
+header{background:var(--blue);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+header h1{font-size:1.3rem;font-weight:700}
+header p{font-size:.82rem;opacity:.85}
+
+/* ── Layout ── */
+.wrap{max-width:1080px;margin:0 auto;padding:20px 14px}
+
+/* ── Card ── */
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}
+.card-hd{padding:10px 16px;font-weight:700;font-size:.92rem;color:#fff;display:flex;align-items:center;gap:7px}
+.hd-blue{background:var(--blue)} .hd-green{background:var(--green)}
+.hd-amber{background:var(--amber)} .hd-gray{background:#374151}
+.hd-purple{background:#6d28d9}
+.card-bd{padding:16px}
+
+/* ── Grid ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* ── Form ── */
+label{display:block;font-size:.79rem;color:var(--gray);margin-bottom:3px;font-weight:600}
+input[type=number],input[type=text],input[type=password],select{
+  width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+  font-size:.93rem;transition:border-color .2s}
+input[type=number]{text-align:left;direction:ltr}
+input:focus,select:focus{outline:none;border-color:var(--blue)}
+
+/* ── Shift grid ── */
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:9px}
+.si{display:flex;align-items:center;justify-content:space-between;background:var(--gray-l);border-radius:7px;padding:7px 11px;gap:8px}
+.si span{font-size:.86rem;font-weight:600;flex:1}
+.si.shab{background:#fef9c3}
+.si input{width:60px;text-align:center;padding:5px 6px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:7px;border:none;font-size:.9rem;font-weight:600;cursor:pointer;transition:background .15s,transform .1s}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:var(--blue-d)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#065f2e}
+.btn-amber{background:#d97706;color:#fff}.btn-amber:hover{background:var(--amber)}
+.btn-gray{background:var(--gray-l);color:#374151;border:1px solid var(--border)}.btn-gray:hover{background:var(--border)}
+.btn-purple{background:#6d28d9;color:#fff}.btn-purple:hover{background:#5b21b6}
+.btn-sm{padding:5px 12px;font-size:.81rem}
+.fr{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* ── Upload zone ── */
+.uz{border:2px dashed var(--border);border-radius:9px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.uz:hover,.uz.drag{border-color:var(--blue);background:var(--blue-l)}
+.uz input[type=file]{display:none}
+.uz .ico{font-size:2rem;margin-bottom:6px}
+.uz p{color:var(--gray);font-size:.85rem}
+.uz strong{color:var(--blue)}
+.finfo{margin-top:8px;font-size:.83rem;color:var(--green);font-weight:600}
+
+/* ── Tables ── */
+.tbl{width:100%;border-collapse:collapse;font-size:.86rem}
+.tbl th{background:var(--blue-l);color:var(--blue-d);padding:7px 11px;text-align:right;font-weight:700;border-bottom:2px solid var(--blue)}
+.tbl td{padding:6px 11px;border-bottom:1px solid var(--border)}
+.tbl tr:hover td{background:var(--gray-l)}
+.tbl .tr-tot td{background:var(--blue-l);font-weight:700;color:var(--blue-d);border-top:2px solid var(--blue)}
+.tbl .tr-shab td{background:#fef9c3}
+
+/* ── Payment boxes ── */
+.pboxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:11px;margin-top:6px}
+.pbox{border-radius:9px;padding:13px 15px;text-align:center}
+.pbox .lbl{font-size:.75rem;font-weight:600;opacity:.85;margin-bottom:3px}
+.pbox .amt{font-size:1.28rem;font-weight:800}
+.pb100{background:var(--blue-l);color:var(--blue-d)}
+.pb200{background:#fce7f3;color:#9d174d}
+.pbshab{background:var(--amber-l);color:#92400e}
+.pbkon{background:var(--green-l);color:var(--green)}
+.pbtot{background:var(--blue);color:#fff}
+
+/* ── Badges ── */
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.73rem;font-weight:700}
+.b-ok{background:var(--green-l);color:var(--green)}
+.b-warn{background:var(--amber-l);color:#92400e}
+.b-err{background:var(--red-l);color:var(--red)}
+
+/* ── Diff colors ── */
+.dpos{color:var(--green);font-weight:700}
+.dneg{color:var(--red);font-weight:700}
+.dzero{color:var(--gray)}
+
+/* ── Analysis box ── */
+.abox{background:var(--gray-l);border-right:4px solid var(--blue);border-radius:0 8px 8px 0;padding:14px 16px;white-space:pre-wrap;font-size:.88rem;line-height:1.75}
+
+/* ── Alerts ── */
+.alert{padding:10px 14px;border-radius:7px;margin-bottom:12px;font-size:.86rem;font-weight:600}
+.a-err{background:var(--red-l);color:var(--red);border:1px solid #fca5a5}
+.a-ok{background:var(--green-l);color:var(--green);border:1px solid #86efac}
+.a-info{background:var(--blue-l);color:var(--blue-d);border:1px solid #93c5fd}
+
+/* ── AI provider tabs ── */
+.ptabs{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.ptab{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:9px;border:2px solid var(--border);background:#fff;cursor:pointer;font-weight:600;font-size:.88rem;color:var(--gray);transition:all .18s;flex:1;min-width:160px}
+.ptab:hover{border-color:var(--blue)}
+.ptab.sel{border-color:var(--blue);background:var(--blue-l);color:var(--blue-d)}
+.ptab .logo{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.ptab .logo.gemini{background:#4285f4;color:#fff}
+.ptab .logo.claude{background:#7c3aed;color:#fff}
+.ptab .check{margin-right:auto;color:var(--green);font-size:1.1rem;display:none}
+.ptab.sel .check{display:block}
+
+/* ── Spinner ── */
+.spin{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loading{color:var(--gray);font-size:.85rem;margin-top:7px}
+
+/* ── Steps ── */
+.steps{display:flex;gap:0;margin-bottom:20px;counter-reset:s}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;font-size:.75rem;color:var(--gray);font-weight:600}
+.step::before{counter-increment:s;content:counter(s);width:28px;height:28px;border-radius:50%;background:var(--border);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;margin-bottom:4px;z-index:1}
+.step.done::before{background:var(--green)}
+.step.active::before{background:var(--blue)}
+.step:not(:last-child)::after{content:'';position:absolute;top:14px;right:50%;left:50%;height:2px;background:var(--border);width:100%;z-index:0}
+.step.done+.step::after{background:var(--green)}
+@media(max-width:500px){.step{font-size:.65rem}}
+
+hr{border:none;border-top:1px solid var(--border);margin:14px 0}
+.muted{color:var(--gray);font-size:.8rem}
+.hidden{display:none!important}
+.num{font-variant-numeric:tabular-nums}
+.mt{margin-top:12px}
+.ovx{overflow-x:auto}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>💼 מחשבון שכר — בקרי מקורות דרום</h1>
+    <p>צביקה לויצקי | חישוב אוטומטי מסידור עבודה והשוואה לתלוש</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ── Steps ── -->
+<div class="steps">
+  <div class="step active" id="s1">פרמטרים</div>
+  <div class="step" id="s2">משמרות</div>
+  <div class="step" id="s3">חישוב</div>
+  <div class="step" id="s4">תלוש</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     א — PARAMETERS
+══════════════════════════════════════════ -->
+<div class="card">
+  <div class="card-hd hd-amber">⚙️ א — פרמטרים בסיסיים</div>
+  <div class="card-bd">
+    <div class="g3">
+      <div><label>ערך שעת עבודה (₪)</label><input type="number" id="p_rate" value="94.19" step="0.01" min="0"></div>
+      <div><label>תעריף שבת בקרים (₪)</label><input type="number" id="p_shab" value="278.30" step="0.01" min="0"></div>
+      <div><label>שעות כוננת חודשיות</label><input type="number" id="p_kon" value="15" step="0.5" min="0"></div>
+      <div><label>ימי חופשה</label><input type="number" id="p_vac" value="0" step="1" min="0"></div>
+      <div><label>ימי מחלה</label><input type="number" id="p_sick" value="0" step="1" min="0"></div>
+      <div><label>שם עובד (לחיפוש בסידור)</label><input type="text" id="p_name" value="צביקה לויצקי"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ב — SHIFTS
+══════════════════════════════════════════ -->
+<div class="card">
+  <div class="card-hd hd-blue">📋 ב — ספר משמרות</div>
+  <div class="card-bd">
+
+    <!-- AI provider for parsing -->
+    <div class="card-hd hd-purple" style="border-radius:7px;margin-bottom:12px;font-size:.83rem">🤖 ניתוח AI — העלאת קובץ Word</div>
+
+    <!-- Provider selection -->
+    <div class="ptabs">
+      <div class="ptab sel" id="pt-gemini" onclick="selProvider('gemini')">
+        <div class="logo gemini">G</div>
+        <div><div style="font-weight:700">Gemini</div><div class="muted">Google</div></div>
+        <div class="check">✓</div>
+      </div>
+      <div class="ptab" id="pt-claude" onclick="selProvider('claude')">
+        <div class="logo claude">C</div>
+        <div><div style="font-weight:700">Claude</div><div class="muted">Anthropic</div></div>
+        <div class="check">✓</div>
+      </div>
+    </div>
+
+    <!-- API key input -->
+    <div id="key-gemini">
+      <label>מפתח API — Gemini (Google AI Studio)</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="password" id="gemini_key" placeholder="AIza..." style="flex:1">
+        <button class="btn btn-gray btn-sm" onclick="toggleKey('gemini_key')">👁</button>
+      </div>
+      <p class="muted mt" style="margin-top:4px">🔒 המפתח נשמר בדפדפן שלך בלבד — לא נשלח לשום שרת חיצוני</p>
+    </div>
+    <div id="key-claude" class="hidden">
+      <label>מפתח API — Claude (Anthropic)</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="password" id="claude_key" placeholder="sk-ant-..." style="flex:1">
+        <button class="btn btn-gray btn-sm" onclick="toggleKey('claude_key')">👁</button>
+      </div>
+      <p class="muted mt" style="margin-top:4px">🔒 המפתח נשמר בדפדפן שלך בלבד</p>
+    </div>
+
+    <hr>
+
+    <!-- Word upload -->
+    <div class="uz" id="dz" onclick="document.getElementById('sched_file').click()">
+      <div class="ico">📄</div>
+      <p><strong>לחץ לבחירה</strong> או גרור קובץ Word (.docx) עם סידור העבודה</p>
+      <p class="finfo hidden" id="sched_fname"></p>
+      <input type="file" id="sched_file" accept=".docx" onchange="onSchedFile(this)">
+    </div>
+    <div class="fr">
+      <button class="btn btn-purple" id="btn-parse" onclick="parseSchedule()" disabled>🔍 נתח סידור עם AI</button>
+    </div>
+    <div id="parse-loading" class="loading hidden">⏳ מנתח סידור עבודה...</div>
+    <div id="parse-err" class="hidden"></div>
+
+    <!-- Parsed preview -->
+    <div id="parsed-preview" class="hidden mt">
+      <div class="alert a-ok" id="parsed-sum"></div>
+      <div class="ovx">
+        <table class="tbl">
+          <thead><tr><th>סוג משמרת</th><th>כמות</th><th>ש"ג 100%</th><th>ש"ג 200%</th><th>שבת בקרים</th></tr></thead>
+          <tbody id="parsed-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Manual entry -->
+    <p class="muted" style="margin-bottom:10px">✏️ הזנה ידנית / עריכה של המשמרות:</p>
+    <div class="sg" id="shift-inputs"></div>
+
+    <div class="fr">
+      <button class="btn btn-green" onclick="calcSalary()">🧮 חשב שכר</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ג+ד — RESULTS
+══════════════════════════════════════════ -->
+<div class="card hidden" id="sec-res">
+  <div class="card-hd hd-green">🧮 ג+ד — שעות ותשלומים</div>
+  <div class="card-bd">
+
+    <h3 style="font-size:.9rem;color:var(--blue-d);margin-bottom:8px">ג — סיכום שעות גמר</h3>
+    <div class="ovx">
+      <table class="tbl">
+        <thead><tr><th>רכיב</th><th>ש"ג 100%</th><th>ש"ג 200%</th><th>שבת בקרים</th></tr></thead>
+        <tbody id="hours-tbody"></tbody>
+      </table>
+    </div>
+
+    <hr>
+    <h3 style="font-size:.9rem;color:var(--blue-d);margin-bottom:8px">פירוט לפי סוג משמרת</h3>
+    <div class="ovx">
+      <table class="tbl">
+        <thead><tr><th>משמרת</th><th>כמות</th><th>ש"ג 100%</th><th>ש"ג 200%</th><th>שבת בקרים</th></tr></thead>
+        <tbody id="break-tbody"></tbody>
+      </table>
+    </div>
+
+    <hr>
+    <h3 style="font-size:.9rem;color:var(--blue-d);margin-bottom:8px">ד — חישוב תשלומים</h3>
+    <div class="pboxes" id="pboxes"></div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ה — PAYSLIP COMPARISON
+══════════════════════════════════════════ -->
+<div class="card hidden" id="sec-cmp">
+  <div class="card-hd hd-gray">📑 ה — השוואה לתלוש שכר</div>
+  <div class="card-bd">
+
+    <!-- Provider for payslip -->
+    <div class="ptabs" style="margin-bottom:10px">
+      <div class="ptab sel" id="pt2-gemini" onclick="selProvider2('gemini')">
+        <div class="logo gemini">G</div>
+        <div><div style="font-weight:700">Gemini</div><div class="muted">Google</div></div>
+        <div class="check">✓</div>
+      </div>
+      <div class="ptab" id="pt2-claude" onclick="selProvider2('claude')">
+        <div class="logo claude">C</div>
+        <div><div style="font-weight:700">Claude</div><div class="muted">Anthropic</div></div>
+        <div class="check">✓</div>
+      </div>
+    </div>
+
+    <div class="uz" id="dz2" onclick="document.getElementById('slip_file').click()">
+      <div class="ico">🧾</div>
+      <p><strong>לחץ לבחירה</strong> או גרור תלוש שכר (JPG / PNG / PDF)</p>
+      <p class="finfo hidden" id="slip_fname"></p>
+      <input type="file" id="slip_file" accept=".jpg,.jpeg,.png,.pdf" onchange="onSlipFile(this)">
+    </div>
+    <div class="fr">
+      <button class="btn btn-blue" id="btn-analyze" onclick="analyzePayslip()" disabled>🔍 נתח תלוש עם AI</button>
+      <button class="btn btn-gray" onclick="localAnalysis()">💡 ניתוח מקומי</button>
+    </div>
+    <div id="slip-loading" class="loading hidden">⏳ מנתח תלוש שכר...</div>
+    <div id="slip-err" class="hidden"></div>
+
+    <!-- Comparison result -->
+    <div id="cmp-result" class="hidden">
+      <hr>
+      <h3 style="font-size:.9rem;color:var(--blue-d);margin-bottom:8px">טבלת השוואה</h3>
+
+      <!-- Manual payslip entry if no AI -->
+      <div id="manual-slip-entry" class="hidden">
+        <p class="muted" style="margin-bottom:10px">הזן ידנית את הסכומים מהתלוש (השאר 0 אם לא מופיע):</p>
+        <div class="g3" style="margin-bottom:12px">
+          <div><label>ש"ג 100% (₪)</label><input type="number" id="ms_100" value="0" step="0.01"></div>
+          <div><label>ש"ג 200% (₪)</label><input type="number" id="ms_200" value="0" step="0.01"></div>
+          <div><label>שבת בקרים (₪)</label><input type="number" id="ms_shab" value="0" step="0.01"></div>
+          <div><label>כוננות (₪)</label><input type="number" id="ms_kon" value="0" step="0.01"></div>
+          <div><label>סה"כ תוספות (₪)</label><input type="number" id="ms_tot" value="0" step="0.01"></div>
+          <div><label>שכר ברוטו (₪)</label><input type="number" id="ms_gross" value="0" step="0.01"></div>
+        </div>
+        <div class="fr"><button class="btn btn-green btn-sm" onclick="buildCompTable(manualSlipData())">עדכן השוואה</button></div>
+        <hr>
+      </div>
+
+      <div class="ovx">
+        <table class="tbl">
+          <thead><tr><th>רכיב</th><th>חישוב מסידור</th><th>מהתלוש</th><th>הפרש</th><th>סטטוס</th></tr></thead>
+          <tbody id="cmp-tbody"></tbody>
+        </table>
+      </div>
+      <hr>
+      <h3 style="font-size:.9rem;color:var(--blue-d);margin-bottom:8px">🤖 ניתוח AI</h3>
+      <div id="ai-loading" class="loading hidden">⏳ מנתח הפרשים...</div>
+      <div class="abox hidden" id="abox"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ════════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════════
+const SHIFTS = [
+  {key:'morning_weekday',              label:'בוקר חול',                    shab:false, h100:0.5,  h200:0},
+  {key:'morning_shabbat',              label:'בוקר שבת',                    shab:true,  h100:0,    h200:8.5},
+  {key:'afternoon_weekday',            label:'צהריים חול',                   shab:false, h100:0.5,  h200:0},
+  {key:'afternoon_friday',             label:'צהריים שישי',                  shab:false, h100:0,    h200:4.5},
+  {key:'afternoon_shabbat',            label:'צהריים שבת',                   shab:true,  h100:0,    h200:8.5},
+  {key:'night_weekday',                label:'לילה חול',                    shab:false, h100:0,    h200:8.5},
+  {key:'night_friday_shabbat',         label:'לילה שישי/שבת',               shab:true,  h100:0,    h200:8.5},
+  {key:'double_morning_afternoon_weekday',        label:'כפולה בוקר+צהריים חול',  shab:false, h100:4.33, h200:0},
+  {key:'double_morning_afternoon_shabbat',        label:'כפולה בוקר+צהריים שבת',  shab:true,  h100:0,    h200:12.83},
+  {key:'double_afternoon_night_weekday',          label:'כפולה צהריים+לילה חול',  shab:false, h100:4.33, h200:0},
+  {key:'double_afternoon_night_friday_shabbat',   label:'כפולה צהריים+לילה שישי/שבת', shab:true, h100:0, h200:13},
+];
+
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let state = {
+  provider:'gemini', provider2:'gemini',
+  schedFile:null, slipFile:null,
+  parsedCounts:{}, calcResult:null, payslipData:null,
+};
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  buildShiftInputs();
+  setupDrop('dz','sched_file');
+  setupDrop('dz2','slip_file');
+  loadKeys();
+});
+
+function buildShiftInputs(){
+  const c=document.getElementById('shift-inputs'); c.innerHTML='';
+  SHIFTS.forEach(s=>{
+    const d=document.createElement('div');
+    d.className='si'+(s.shab?' shab':'');
+    d.innerHTML=`<span>${s.label}</span>
+      <input type="number" id="m_${s.key}" value="0" min="0" step="1" onchange="onManual()">`;
+    c.appendChild(d);
+  });
+}
+
+// ════════════════════════════════════════════
+// PROVIDER TABS
+// ════════════════════════════════════════════
+function selProvider(p){
+  state.provider=p;
+  document.getElementById('pt-gemini').classList.toggle('sel',p==='gemini');
+  document.getElementById('pt-claude').classList.toggle('sel',p==='claude');
+  document.getElementById('key-gemini').classList.toggle('hidden',p!=='gemini');
+  document.getElementById('key-claude').classList.toggle('hidden',p==='gemini');
+}
+function selProvider2(p){
+  state.provider2=p;
+  document.getElementById('pt2-gemini').classList.toggle('sel',p==='gemini');
+  document.getElementById('pt2-claude').classList.toggle('sel',p==='claude');
+}
+function toggleKey(id){
+  const el=document.getElementById(id);
+  el.type=el.type==='password'?'text':'password';
+}
+function loadKeys(){
+  const gk=localStorage.getItem('gemini_key')||'';
+  const ck=localStorage.getItem('claude_key')||'';
+  if(gk) document.getElementById('gemini_key').value=gk;
+  if(ck) document.getElementById('claude_key').value=ck;
+}
+function saveKeys(){
+  const gk=document.getElementById('gemini_key').value.trim();
+  const ck=document.getElementById('claude_key').value.trim();
+  if(gk) localStorage.setItem('gemini_key',gk);
+  if(ck) localStorage.setItem('claude_key',ck);
+}
+function getKey(p){
+  if(p==='gemini') return document.getElementById('gemini_key').value.trim();
+  return document.getElementById('claude_key').value.trim();
+}
+
+// ════════════════════════════════════════════
+// DRAG & DROP
+// ════════════════════════════════════════════
+function setupDrop(zId,inputId){
+  const z=document.getElementById(zId);
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag')});
+  z.addEventListener('dragleave',()=>z.classList.remove('drag'));
+  z.addEventListener('drop',e=>{
+    e.preventDefault();z.classList.remove('drag');
+    const f=e.dataTransfer.files[0];
+    if(f){document.getElementById(inputId).files=e.dataTransfer.files;document.getElementById(inputId).dispatchEvent(new Event('change'))}
+  });
+}
+
+// ════════════════════════════════════════════
+// FILE HANDLERS
+// ════════════════════════════════════════════
+function onSchedFile(inp){
+  const f=inp.files[0]; if(!f)return;
+  state.schedFile=f;
+  showFile('sched_fname',f.name);
+  document.getElementById('btn-parse').disabled=false;
+  hide('parse-err');
+}
+function onSlipFile(inp){
+  const f=inp.files[0]; if(!f)return;
+  state.slipFile=f;
+  showFile('slip_fname',f.name);
+  document.getElementById('btn-analyze').disabled=false;
+  hide('slip-err');
+}
+function showFile(id,name){
+  const el=document.getElementById(id);
+  el.textContent='📎 '+name; el.classList.remove('hidden');
+}
+function onManual(){
+  // nothing needed — calc on button click
+}
+
+// ════════════════════════════════════════════
+// PARSE SCHEDULE
+// ════════════════════════════════════════════
+async function parseSchedule(){
+  const key=getKey(state.provider);
+  if(!key){showErr('parse-err','נא להזין מפתח API של '+state.provider);return;}
+  saveKeys();
+
+  const btn=document.getElementById('btn-parse');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> מנתח...';
+  show('parse-loading'); hide('parse-err');
+  document.getElementById('parsed-preview').classList.add('hidden');
+
+  try{
+    const text=await readDocx(state.schedFile);
+    const empName=document.getElementById('p_name').value.trim();
+    let result;
+    if(state.provider==='gemini') result=await geminiParseSchedule(key,text,empName);
+    else                           result=await claudeParseSchedule(key,text,empName);
+
+    state.parsedCounts=result.shift_counts||{};
+    syncToManual(state.parsedCounts);
+    showParsedPreview(result);
+    setStep(2);
+  }catch(e){showErr('parse-err',e.message);}
+  finally{btn.disabled=false;btn.innerHTML='🔍 נתח סידור עם AI';hide('parse-loading');}
+}
+
+// Read .docx as plain text using mammoth (CDN) or raw XML fallback
+async function readDocx(file){
+  // Try to extract text from docx by parsing XML inside the zip
+  const ab=await file.arrayBuffer();
+  const decoder=new TextDecoder('utf-8');
+  // docx is a zip — find word/document.xml
+  try{
+    const {JSZip}=window; // optional
+    if(typeof JSZip!=='undefined'){
+      const zip=await JSZip.loadAsync(ab);
+      const xml=await zip.file('word/document.xml').async('string');
+      return xml.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    }
+  }catch(e){}
+  // Fallback: read raw bytes and extract visible text heuristically
+  const raw=decoder.decode(ab);
+  return raw.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,8000);
+}
+
+// ════════════════════════════════════════════
+// GEMINI API  (model: gemini-2.5-flash-preview-05-20)
+// ════════════════════════════════════════════
+const GEMINI_MODEL='gemini-2.5-flash-preview-05-20';
+
+async function geminiRequest(key, parts){
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+  const body={contents:[{parts}]};
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok){const e=await r.json();throw new Error('Gemini: '+(e.error?.message||r.statusText));}
+  const d=await r.json();
+  return d.candidates?.[0]?.content?.parts?.[0]?.text||'';
+}
+
+async function geminiParseSchedule(key,text,empName){
+  const nameCtx=empName?`חפש ספציפית את "${empName}".`:'';
+  const prompt=schedulePrompt(text,nameCtx);
+  const raw=await geminiRequest(key,[{text:prompt}]);
+  return parseJSON(raw);
+}
+
+async function geminiAnalyzePayslip(key,file){
+  const {b64,mime}=await fileToBase64(file);
+  const prompt=payslipPrompt();
+  const raw=await geminiRequest(key,[
+    {inline_data:{mime_type:mime,data:b64}},
+    {text:prompt}
+  ]);
+  return parseJSON(raw);
+}
+
+async function geminiCompare(key,calcResult,payslipData){
+  const prompt=comparePrompt(calcResult,payslipData);
+  return await geminiRequest(key,[{text:prompt}]);
+}
+
+// ════════════════════════════════════════════
+// CLAUDE API  (model: claude-opus-4-7)
+// ════════════════════════════════════════════
+const CLAUDE_MODEL='claude-opus-4-7';
+
+async function claudeRequest(key,messages,system=''){
+  const body={model:CLAUDE_MODEL,max_tokens:2048,messages};
+  if(system) body.system=system;
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok){const e=await r.json();throw new Error('Claude: '+(e.error?.message||r.statusText));}
+  const d=await r.json();
+  return d.content?.[0]?.text||'';
+}
+
+async function claudeParseSchedule(key,text,empName){
+  const nameCtx=empName?`חפש ספציפית את "${empName}".`:'';
+  const raw=await claudeRequest(key,[{role:'user',content:schedulePrompt(text,nameCtx)}]);
+  return parseJSON(raw);
+}
+
+async function claudeAnalyzePayslip(key,file){
+  const {b64,mime}=await fileToBase64(file);
+  const r=await claudeRequest(key,[{role:'user',content:[
+    {type:'image',source:{type:'base64',media_type:mime,data:b64}},
+    {type:'text',text:payslipPrompt()}
+  ]}]);
+  return parseJSON(r);
+}
+
+async function claudeCompare(key,calcResult,payslipData){
+  return await claudeRequest(key,[{role:'user',content:comparePrompt(calcResult,payslipData)}]);
+}
+
+// ════════════════════════════════════════════
+// PROMPTS
+// ════════════════════════════════════════════
+function schedulePrompt(text,nameCtx){
+  return `אתה מנתח סידורי עבודה לבקרי מקורות. ${nameCtx}
+
+סוגי משמרות:
+morning_weekday=בוקר חול | morning_shabbat=בוקר שבת | afternoon_weekday=צהריים חול
+afternoon_friday=צהריים שישי | afternoon_shabbat=צהריים שבת | night_weekday=לילה חול
+night_friday_shabbat=לילה שישי/שבת | double_morning_afternoon_weekday=כפולה בוקר+צהריים חול
+double_morning_afternoon_shabbat=כפולה בוקר+צהריים שבת | double_afternoon_night_weekday=כפולה צהריים+לילה חול
+double_afternoon_night_friday_shabbat=כפולה צהריים+לילה שישי/שבת
+
+תוכן הסידור:
+---
+${text.substring(0,6000)}
+---
+
+החזר JSON בלבד:
+{"employee_name":"","month":"","shift_counts":{"morning_weekday":0,"morning_shabbat":0,"afternoon_weekday":0,"afternoon_friday":0,"afternoon_shabbat":0,"night_weekday":0,"night_friday_shabbat":0,"double_morning_afternoon_weekday":0,"double_morning_afternoon_shabbat":0,"double_afternoon_night_weekday":0,"double_afternoon_night_friday_shabbat":0},"total_shifts":0,"notes":""}`;
+}
+
+function payslipPrompt(){
+  return `נתח תלוש שכר ישראלי זה. חלץ את כל הרכיבים.
+החזר JSON בלבד:
+{"employee_name":"","month":"","gross_salary":0,"net_salary":0,"components":{"payment_100":0,"payment_200":0,"shabbat_payment":0,"konenut_payment":0,"total_shift_extras":0},"deductions":{"income_tax":0,"national_insurance":0,"health_insurance":0,"pension":0,"other":0},"raw_items":[{"name":"","amount":0}]}
+אם שדה לא נמצא השתמש ב-0.`;
+}
+
+function comparePrompt(calc,slip){
+  const p=calc.payments||{};
+  const c=slip.components||{};
+  return `השווה בין חישוב שכר לתלוש. כתוב בעברית, מקצועי וברור.
+
+חישוב מסידור:
+ש"ג 100%: ${fmt(p.payment_100)} ₪ | ש"ג 200%: ${fmt(p.payment_200)} ₪
+שבת בקרים: ${fmt(p.shabbat_payment)} ₪ | כוננות: ${fmt(p.konenut_payment)} ₪
+סה"כ תוספות: ${fmt(p.total)} ₪
+
+נתוני תלוש:
+ש"ג 100%: ${fmt(c.payment_100)} ₪ | ש"ג 200%: ${fmt(c.payment_200)} ₪
+שבת בקרים: ${fmt(c.shabbat_payment)} ₪ | כוננות: ${fmt(c.konenut_payment)} ₪
+סה"כ תוספות (תלוש): ${fmt(c.total_shift_extras)} ₪
+ברוטו: ${fmt(slip.gross_salary)} ₪ | נטו: ${fmt(slip.net_salary)} ₪
+
+נתח: 1) האם שולם נכון? 2) הפרשים לפי רכיב 3) סיבות אפשריות 4) המלצה לפעולה`;
+}
+
+// ════════════════════════════════════════════
+// PAYSLIP ANALYSIS
+// ════════════════════════════════════════════
+async function analyzePayslip(){
+  const key=getKey(state.provider2);
+  if(!key){showErr('slip-err','נא להזין מפתח API של '+state.provider2);return;}
+  saveKeys();
+
+  const btn=document.getElementById('btn-analyze');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> מנתח...';
+  show('slip-loading'); hide('slip-err');
+  document.getElementById('cmp-result').classList.add('hidden');
+
+  try{
+    let slipData;
+    if(state.provider2==='gemini') slipData=await geminiAnalyzePayslip(key,state.slipFile);
+    else                            slipData=await claudeAnalyzePayslip(key,state.slipFile);
+
+    state.payslipData=slipData;
+    buildCompTable(slipData);
+    await runAICompare(key);
+    setStep(4);
+  }catch(e){showErr('slip-err',e.message);}
+  finally{btn.disabled=false;btn.innerHTML='🔍 נתח תלוש עם AI';hide('slip-loading');}
+}
+
+function localAnalysis(){
+  // Show manual entry form
+  document.getElementById('cmp-result').classList.remove('hidden');
+  document.getElementById('manual-slip-entry').classList.remove('hidden');
+  hide('abox'); hide('ai-loading');
+  buildCompTable(manualSlipData());
+  setStep(4);
+}
+
+function manualSlipData(){
+  return {components:{
+    payment_100:   +document.getElementById('ms_100').value||0,
+    payment_200:   +document.getElementById('ms_200').value||0,
+    shabbat_payment:+document.getElementById('ms_shab').value||0,
+    konenut_payment:+document.getElementById('ms_kon').value||0,
+    total_shift_extras:+document.getElementById('ms_tot').value||0,
+  },gross_salary:+document.getElementById('ms_gross').value||0,net_salary:0};
+}
+
+function buildCompTable(slipData){
+  if(!state.calcResult)return;
+  const cp=state.calcResult.payments;
+  const pp=slipData.components||{};
+  const rows=[
+    {label:'ש"ג 100%',    calc:cp.payment_100,    slip:pp.payment_100},
+    {label:'ש"ג 200%',    calc:cp.payment_200,    slip:pp.payment_200},
+    {label:'שבת בקרים',  calc:cp.shabbat_payment, slip:pp.shabbat_payment},
+    {label:'כוננות',      calc:cp.konenut_payment, slip:pp.konenut_payment},
+    {label:'סה"כ תוספות', calc:cp.total,           slip:pp.total_shift_extras},
+  ];
+  const tb=document.getElementById('cmp-tbody'); tb.innerHTML='';
+  rows.forEach((r,i)=>{
+    const cv=Number(r.calc||0), pv=Number(r.slip||0);
+    const diff=pv-cv, abs=Math.abs(diff);
+    const isTotal=i===rows.length-1;
+    let ds,badge,cls;
+    if(pv===0&&cv===0){ds='—';badge='<span class="badge b-ok">—</span>';cls='dzero';}
+    else if(abs<1){ds='✓';badge='<span class="badge b-ok">תקין</span>';cls='dzero';}
+    else if(diff>0){ds=`+₪${fmt(abs)}`;badge='<span class="badge b-warn">יתרה</span>';cls='dpos';}
+    else{ds=`-₪${fmt(abs)}`;badge='<span class="badge b-err">חסר</span>';cls='dneg';}
+    tb.innerHTML+=`<tr ${isTotal?'class="tr-tot"':''}>
+      <td>${r.label}</td>
+      <td class="num">₪${fmt(cv)}</td>
+      <td class="num">${pv===0?'—':'₪'+fmt(pv)}</td>
+      <td class="num ${cls}">${ds}</td>
+      <td>${badge}</td>
+    </tr>`;
+  });
+  document.getElementById('cmp-result').classList.remove('hidden');
+  document.getElementById('sec-cmp').scrollIntoView({behavior:'smooth'});
+}
+
+async function runAICompare(key){
+  if(!state.calcResult||!state.payslipData)return;
+  show('ai-loading'); hide('abox');
+  try{
+    let txt;
+    if(state.provider2==='gemini') txt=await geminiCompare(key,state.calcResult,state.payslipData);
+    else                            txt=await claudeCompare(key,state.calcResult,state.payslipData);
+    const box=document.getElementById('abox');
+    box.textContent=txt; box.classList.remove('hidden');
+  }catch(e){
+    const box=document.getElementById('abox');
+    box.textContent='שגיאה בניתוח AI: '+e.message; box.classList.remove('hidden');
+  }finally{hide('ai-loading');}
+}
+
+// ════════════════════════════════════════════
+// SALARY CALCULATION  (client-side, matches Python)
+// ════════════════════════════════════════════
+function calcSalary(){
+  const rate=+document.getElementById('p_rate').value||94.19;
+  const shabRate=+document.getElementById('p_shab').value||278.30;
+  const kon=+document.getElementById('p_kon').value||15;
+  const vac=+document.getElementById('p_vac').value||0;
+
+  let h100s=0,h200s=0,shabV=0;
+  const breakdown=[];
+  SHIFTS.forEach(s=>{
+    const cnt=+document.getElementById('m_'+s.key).value||0;
+    if(cnt<=0)return;
+    const h100=s.h100*cnt, h200=s.h200*cnt, sv=s.shab?cnt:0;
+    h100s+=h100; h200s+=h200; shabV+=sv;
+    breakdown.push({label:s.label,cnt,h100:round2(h100),h200:round2(h200),sv});
+  });
+
+  const vacH=vac*2.25;
+  const totalH100=round2(h100s+kon+vacH);
+  const totalH200=round2(h200s);
+
+  const pay100=round2(totalH100*rate);
+  const pay200=round2(totalH200*rate*2);
+  const payShab=round2(shabV*shabRate);
+  const payKon=round2(kon*rate);
+  const total=round2(pay100+pay200+payShab+payKon);
+
+  state.calcResult={
+    hours_summary:{shift_hours_100:round2(h100s),seniority_hours:kon,vacation_hours:round2(vacH),total_hours_100:totalH100,shift_hours_200:round2(h200s),total_hours_200:totalH200,shabbat_visits:shabV},
+    breakdown,
+    payments:{payment_100:pay100,payment_200:pay200,shabbat_payment:payShab,konenut_payment:payKon,total},
+  };
+
+  renderCalc(state.calcResult);
+  document.getElementById('sec-res').classList.remove('hidden');
+  document.getElementById('sec-cmp').classList.remove('hidden');
+  document.getElementById('sec-res').scrollIntoView({behavior:'smooth'});
+  setStep(3);
+}
+
+function renderCalc(r){
+  const hs=r.hours_summary;
+  document.getElementById('hours-tbody').innerHTML=`
+    <tr><td>ממשמרות (100%)</td><td class="num">${hs.shift_hours_100}</td><td>—</td><td>—</td></tr>
+    <tr><td>כוננות חודשית</td><td class="num">${hs.seniority_hours}</td><td>—</td><td>—</td></tr>
+    <tr><td>ימי חופשה (×2.25)</td><td class="num">${hs.vacation_hours}</td><td>—</td><td>—</td></tr>
+    <tr><td>משמרות שבת/לילה (200%)</td><td>—</td><td class="num">${hs.shift_hours_200}</td><td>—</td></tr>
+    <tr><td>שבת בקרים</td><td>—</td><td>—</td><td class="num">${hs.shabbat_visits}</td></tr>
+    <tr class="tr-tot"><td>סה"כ</td><td class="num">${hs.total_hours_100}</td><td class="num">${hs.total_hours_200}</td><td class="num">${hs.shabbat_visits}</td></tr>`;
+
+  const bt=document.getElementById('break-tbody'); bt.innerHTML='';
+  (r.breakdown||[]).forEach(b=>{
+    bt.innerHTML+=`<tr class="${b.sv?'tr-shab':''}">
+      <td>${b.label}</td><td class="num">${b.cnt}</td>
+      <td class="num">${b.h100>0?b.h100:'—'}</td>
+      <td class="num">${b.h200>0?b.h200:'—'}</td>
+      <td class="num">${b.sv>0?b.sv:'—'}</td>
+    </tr>`;
+  });
+  if(!r.breakdown||!r.breakdown.length)
+    bt.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--gray)">אין משמרות</td></tr>';
+
+  const p=r.payments;
+  document.getElementById('pboxes').innerHTML=`
+    <div class="pbox pb100"><div class="lbl">ש"ג 100%</div><div class="amt num">₪${fmt(p.payment_100)}</div></div>
+    <div class="pbox pb200"><div class="lbl">ש"ג 200%</div><div class="amt num">₪${fmt(p.payment_200)}</div></div>
+    <div class="pbox pbshab"><div class="lbl">שבת בקרים</div><div class="amt num">₪${fmt(p.shabbat_payment)}</div></div>
+    <div class="pbox pbkon"><div class="lbl">כוננות</div><div class="amt num">₪${fmt(p.konenut_payment)}</div></div>
+    <div class="pbox pbtot"><div class="lbl">סה"כ תוספות</div><div class="amt num">₪${fmt(p.total)}</div></div>`;
+}
+
+// Sync parsed counts to manual inputs
+function syncToManual(counts){
+  SHIFTS.forEach(s=>{
+    const el=document.getElementById('m_'+s.key);
+    if(el) el.value=counts[s.key]||0;
+  });
+}
+
+function showParsedPreview(data){
+  const name=data.employee_name?` — ${data.employee_name}`:'';
+  const month=data.month?` (${data.month})`:'';
+  document.getElementById('parsed-sum').textContent=`✅ זוהו ${data.total_shifts||0} משמרות${name}${month}`;
+
+  const tb=document.getElementById('parsed-tbody'); tb.innerHTML='';
+  SHIFTS.forEach(s=>{
+    const cnt=(data.shift_counts||{})[s.key]||0; if(!cnt)return;
+    const h100=(s.h100*cnt).toFixed(2), h200=(s.h200*cnt).toFixed(2), sv=s.shab?cnt:0;
+    tb.innerHTML+=`<tr class="${s.shab?'tr-shab':''}">
+      <td>${s.label}</td><td class="num">${cnt}</td>
+      <td class="num">${h100>0?h100:'—'}</td>
+      <td class="num">${h200>0?h200:'—'}</td>
+      <td class="num">${sv>0?sv:'—'}</td>
+    </tr>`;
+  });
+  document.getElementById('parsed-preview').classList.remove('hidden');
+}
+
+// ════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════
+async function fileToBase64(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>{
+      const dataUrl=r.result;
+      const b64=dataUrl.split(',')[1];
+      const mimeMap={'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','pdf':'application/pdf'};
+      const ext=file.name.split('.').pop().toLowerCase();
+      res({b64,mime:mimeMap[ext]||'image/jpeg'});
+    };
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function parseJSON(raw){
+  let s=raw.trim();
+  if(s.startsWith('```')){const lines=s.split('\n');s=lines.slice(1,-1).join('\n');}
+  return JSON.parse(s);
+}
+
+function fmt(n){return Number(n||0).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function round2(n){return Math.round(n*100)/100;}
+function show(id){document.getElementById(id).classList.remove('hidden');}
+function hide(id){document.getElementById(id).classList.add('hidden');}
+
+function showErr(id,msg){
+  const el=document.getElementById(id);
+  el.className='alert a-err';
+  el.textContent='❌ '+msg;
+  el.classList.remove('hidden');
+}
+
+function setStep(n){
+  for(let i=1;i<=4;i++){
+    const el=document.getElementById('s'+i);
+    el.classList.remove('active','done');
+    if(i<n) el.classList.add('done');
+    else if(i===n) el.classList.add('active');
+  }
+}
+</script>
+
+</body>
+</html>
