@@ -3,897 +3,1960 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>מחשבון שכר — צביקה לויצקי</title>
+<title>מחשבון שכר — בקרי מקורות דרום</title>
 <style>
 :root {
-  --blue:#1a56db; --blue-d:#1241a8; --blue-l:#e8f0fe;
-  --green:#0b7a3e; --green-l:#d4edda;
-  --red:#c0392b;   --red-l:#fde8e8;
-  --amber:#b45309; --amber-l:#fff8e1;
-  --gray:#6b7280;  --gray-l:#f3f4f6;
-  --border:#d1d5db; --radius:10px;
-  --shadow:0 1px 5px rgba(0,0,0,.12);
+  --primary: #1a56cc;
+  --primary-dark: #1040a8;
+  --success: #15803d;
+  --warning: #d97706;
+  --danger: #c0392b;
+  --bg: #f0f4f8;
+  --card: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --blue-light: #eff6ff;
+  --green-light: #f0fdf4;
+  --red-light: #fef2f2;
+  --yellow-light: #fffbeb;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#1f2937;font-size:15px;line-height:1.6}
+* { box-sizing: border-box; font-family: "Segoe UI", "Heebo", Arial, sans-serif; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-size: 14px; padding: 12px; }
+.wrap { max-width: 1000px; margin: 0 auto; }
 
-/* ── Header ── */
-header{background:var(--blue);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-header h1{font-size:1.3rem;font-weight:700}
-header p{font-size:.82rem;opacity:.85}
+header {
+  background: linear-gradient(135deg, #1a56cc, #1040a8);
+  color: #fff; padding: 18px 22px; border-radius: 14px; margin-bottom: 14px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+}
+header h1 { font-size: 19px; margin: 0; }
+header p  { font-size: 12px; opacity: .82; margin-top: 3px; }
+header .hbtn { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3); color: #fff; padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600; }
+header .hbtn:hover { background: rgba(255,255,255,.28); }
 
-/* ── Layout ── */
-.wrap{max-width:1080px;margin:0 auto;padding:20px 14px}
+.steps { display: flex; gap: 0; margin-bottom: 14px; counter-reset: step; }
+.step {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  position: relative; font-size: 11px; color: var(--muted); font-weight: 600;
+  counter-increment: step;
+}
+.step::before {
+  content: counter(step);
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--border); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; margin-bottom: 4px; z-index: 1;
+}
+.step.done::before { background: var(--success); content: "✓"; }
+.step.active::before { background: var(--primary); }
+.step:not(:last-child)::after {
+  content: ''; position: absolute; top: 14px; right: 50%; left: 50%;
+  height: 2px; background: var(--border); width: 100%; z-index: 0;
+}
+.step.done + .step::after { background: var(--success); }
 
-/* ── Card ── */
-.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}
-.card-hd{padding:10px 16px;font-weight:700;font-size:.92rem;color:#fff;display:flex;align-items:center;gap:7px}
-.hd-blue{background:var(--blue)} .hd-green{background:var(--green)}
-.hd-amber{background:var(--amber)} .hd-gray{background:#374151}
-.hd-purple{background:#6d28d9}
-.card-bd{padding:16px}
+.card { background: var(--card); border-radius: 12px; padding: 18px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
+h2 { font-size: 15px; margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); margin: 14px 0 6px; font-weight: 700; }
 
-/* ── Grid ── */
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.info  { background: var(--blue-light);  border-right: 3px solid var(--primary); padding: 9px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; line-height: 1.5; }
+.ok    { background: var(--green-light); border-right: 3px solid var(--success); padding: 9px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; }
+.warn  { background: var(--yellow-light);border-right: 3px solid var(--warning); padding: 9px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; line-height: 1.6; }
+.err   { background: var(--red-light);   border-right: 3px solid var(--danger);  padding: 9px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; line-height: 1.6; }
 
-/* ── Form ── */
-label{display:block;font-size:.79rem;color:var(--gray);margin-bottom:3px;font-weight:600}
-input[type=number],input[type=text],input[type=password],select{
-  width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;
-  font-size:.93rem;transition:border-color .2s}
-input[type=number]{text-align:left;direction:ltr}
-input:focus,select:focus{outline:none;border-color:var(--blue)}
+.drop {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 2px dashed var(--border); border-radius: 10px; padding: 18px; cursor: pointer;
+  background: #fafafa; transition: all .2s; min-height: 90px; text-align: center;
+}
+.drop:hover, .drop.over { border-color: var(--primary); background: var(--blue-light); }
+.drop.done { border-color: var(--success); background: var(--green-light); }
+.drop .ico { font-size: 26px; margin-bottom: 5px; }
+.drop .title { font-weight: 700; font-size: 13px; }
+.drop .sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
 
-/* ── Shift grid ── */
-.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:9px}
-.si{display:flex;align-items:center;justify-content:space-between;background:var(--gray-l);border-radius:7px;padding:7px 11px;gap:8px}
-.si span{font-size:.86rem;font-weight:600;flex:1}
-.si.shab{background:#fef9c3}
-.si input{width:60px;text-align:center;padding:5px 6px}
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media(max-width:560px){ .grid2 { grid-template-columns: 1fr; } }
 
-/* ── Buttons ── */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:7px;border:none;font-size:.9rem;font-weight:600;cursor:pointer;transition:background .15s,transform .1s}
-.btn:active{transform:scale(.97)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:var(--blue-d)}
-.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#065f2e}
-.btn-amber{background:#d97706;color:#fff}.btn-amber:hover{background:var(--amber)}
-.btn-gray{background:var(--gray-l);color:#374151;border:1px solid var(--border)}.btn-gray:hover{background:var(--border)}
-.btn-purple{background:#6d28d9;color:#fff}.btn-purple:hover{background:#5b21b6}
-.btn-sm{padding:5px 12px;font-size:.81rem}
-.fr{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;flex-wrap:wrap}
+button {
+  background: var(--primary); color: #fff; border: none;
+  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: background .15s;
+}
+button:hover:not(:disabled) { background: var(--primary-dark); }
+button:disabled { background: #9ca3af; cursor: not-allowed; }
+button.sec  { background: #6b7280; }
+button.sec:hover:not(:disabled) { background: #4b5563; }
+button.sml  { padding: 5px 12px; font-size: 12px; }
+button.formula-btn { padding: 4px 10px; font-size: 11px; background: #e5e7eb; color: #374151; border: 1px solid #d1d5db; }
+button.formula-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+button.formula-btn:hover:not(.active) { background: #d1d5db; }
 
-/* ── Upload zone ── */
-.uz{border:2px dashed var(--border);border-radius:9px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
-.uz:hover,.uz.drag{border-color:var(--blue);background:var(--blue-l)}
-.uz input[type=file]{display:none}
-.uz .ico{font-size:2rem;margin-bottom:6px}
-.uz p{color:var(--gray);font-size:.85rem}
-.uz strong{color:var(--blue)}
-.finfo{margin-top:8px;font-size:.83rem;color:var(--green);font-weight:600}
+.ai-prov-card {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border: 2px solid var(--border); border-radius: 12px; cursor: pointer;
+  transition: all .18s; background: #fff;
+}
+.ai-prov-card:hover { border-color: #a5b4fc; background: #f5f3ff; }
+.ai-prov-card.active { border-color: var(--primary); background: var(--blue-light); box-shadow: 0 0 0 3px rgba(26,86,204,.1); }
+.ai-prov-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ai-prov-info { flex: 1; }
+.ai-prov-name { font-weight: 700; font-size: 14px; color: var(--text); }
+.ai-prov-company { font-size: 11px; color: var(--muted); }
+.ai-prov-status { font-size: 18px; font-weight: 700; }
+.ai-prov-status.ok { color: var(--success); }
+.ai-prov-status.empty { color: var(--border); }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Tables ── */
-.tbl{width:100%;border-collapse:collapse;font-size:.86rem}
-.tbl th{background:var(--blue-l);color:var(--blue-d);padding:7px 11px;text-align:right;font-weight:700;border-bottom:2px solid var(--blue)}
-.tbl td{padding:6px 11px;border-bottom:1px solid var(--border)}
-.tbl tr:hover td{background:var(--gray-l)}
-.tbl .tr-tot td{background:var(--blue-l);font-weight:700;color:var(--blue-d);border-top:2px solid var(--blue)}
-.tbl .tr-shab td{background:#fef9c3}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); vertical-align: middle; }
+th { background: #f9fafb; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; color: var(--muted); }
+tr.sat td { background: #fef2f2; }
+tr.fri td { background: #fefce8; }
+tr.dbl td { background: #fdf4ff; }
+tr.match td { background: var(--green-light); }
+tr.mismatch td { background: var(--red-light); }
+tr.total-row td { background: var(--blue-light); font-weight: 700; border-top: 2px solid var(--primary); }
 
-/* ── Payment boxes ── */
-.pboxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:11px;margin-top:6px}
-.pbox{border-radius:9px;padding:13px 15px;text-align:center}
-.pbox .lbl{font-size:.75rem;font-weight:600;opacity:.85;margin-bottom:3px}
-.pbox .amt{font-size:1.28rem;font-weight:800}
-.pb100{background:var(--blue-l);color:var(--blue-d)}
-.pb200{background:#fce7f3;color:#9d174d}
-.pbshab{background:var(--amber-l);color:#92400e}
-.pbkon{background:var(--green-l);color:var(--green)}
-.pbtot{background:var(--blue);color:#fff}
+.qty-input {
+  width: 54px; text-align: center; border: 1px solid var(--border); border-radius: 5px;
+  padding: 3px 5px; font-size: 13px; background: #fff;
+}
+.qty-input:focus { outline: none; border-color: var(--primary); }
 
-/* ── Badges ── */
-.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.73rem;font-weight:700}
-.b-ok{background:var(--green-l);color:var(--green)}
-.b-warn{background:var(--amber-l);color:#92400e}
-.b-err{background:var(--red-l);color:var(--red)}
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-bottom: 14px; }
+.stat { background: #f9fafb; border-radius: 8px; padding: 10px; text-align: center; }
+.stat .n { font-size: 22px; font-weight: 700; }
+.stat .l { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; margin-top: 2px; }
 
-/* ── Diff colors ── */
-.dpos{color:var(--green);font-weight:700}
-.dneg{color:var(--red);font-weight:700}
-.dzero{color:var(--gray)}
+.total-box {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff; border-radius: 12px; padding: 16px 20px; text-align: center; margin: 14px 0;
+}
+.total-box .amount { font-size: 36px; font-weight: 800; }
+.total-box .lbl  { font-size: 13px; opacity: .85; }
+.total-box .sub  { font-size: 11px; opacity: .7; margin-top: 3px; }
 
-/* ── Analysis box ── */
-.abox{background:var(--gray-l);border-right:4px solid var(--blue);border-radius:0 8px 8px 0;padding:14px 16px;white-space:pre-wrap;font-size:.88rem;line-height:1.75}
+.diff-box {
+  border-radius: 10px; padding: 14px 18px; margin: 10px 0;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.diff-box .dlbl { font-size: 12px; opacity: .85; }
+.diff-box .dtitle { font-size: 14px; font-weight: 700; }
+.diff-box .damount { font-size: 28px; font-weight: 800; }
 
-/* ── Alerts ── */
-.alert{padding:10px 14px;border-radius:7px;margin-bottom:12px;font-size:.86rem;font-weight:600}
-.a-err{background:var(--red-l);color:var(--red);border:1px solid #fca5a5}
-.a-ok{background:var(--green-l);color:var(--green);border:1px solid #86efac}
-.a-info{background:var(--blue-l);color:var(--blue-d);border:1px solid #93c5fd}
+.pill { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+.pill.g { background: #dcfce7; color: #15803d; }
+.pill.r { background: #fee2e2; color: #b91c1c; }
+.pill.y { background: #fef9c3; color: #a16207; }
 
-/* ── AI provider tabs ── */
-.ptabs{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.ptab{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:9px;border:2px solid var(--border);background:#fff;cursor:pointer;font-weight:600;font-size:.88rem;color:var(--gray);transition:all .18s;flex:1;min-width:160px}
-.ptab:hover{border-color:var(--blue)}
-.ptab.sel{border-color:var(--blue);background:var(--blue-l);color:var(--blue-d)}
-.ptab .logo{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
-.ptab .logo.gemini{background:#4285f4;color:#fff}
-.ptab .logo.claude{background:#7c3aed;color:#fff}
-.ptab .check{margin-right:auto;color:var(--green);font-size:1.1rem;display:none}
-.ptab.sel .check{display:block}
+.loader { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(0,0,0,.15); border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-left: 5px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Spinner ── */
-.spin{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-.loading{color:var(--gray);font-size:.85rem;margin-top:7px}
+details { background: #f9fafb; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+details summary { cursor: pointer; color: var(--primary); font-weight: 600; font-size: 13px; user-select: none; }
+.dbg { background: #1e1e1e; color: #d4d4d4; font-family: monospace; font-size: 10px; padding: 10px; border-radius: 6px; max-height: 200px; overflow-y: auto; white-space: pre-wrap; direction: ltr; text-align: left; margin-top: 8px; }
 
-/* ── Steps ── */
-.steps{display:flex;gap:0;margin-bottom:20px;counter-reset:s}
-.step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;font-size:.75rem;color:var(--gray);font-weight:600}
-.step::before{counter-increment:s;content:counter(s);width:28px;height:28px;border-radius:50%;background:var(--border);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;margin-bottom:4px;z-index:1}
-.step.done::before{background:var(--green)}
-.step.active::before{background:var(--blue)}
-.step:not(:last-child)::after{content:'';position:absolute;top:14px;right:50%;left:50%;height:2px;background:var(--border);width:100%;z-index:0}
-.step.done+.step::after{background:var(--green)}
-@media(max-width:500px){.step{font-size:.65rem}}
+input[type=text], input[type=month] {
+  padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 13px; font-family: inherit; background: #fff; color: var(--text);
+}
+input[type=text]:focus, input[type=month]:focus { outline: none; border-color: var(--primary); }
 
-hr{border:none;border-top:1px solid var(--border);margin:14px 0}
-.muted{color:var(--gray);font-size:.8rem}
-.hidden{display:none!important}
-.num{font-variant-numeric:tabular-nums}
-.mt{margin-top:12px}
-.ovx{overflow-x:auto}
+.flex { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.mt { margin-top: 12px; }
+.mb { margin-bottom: 10px; }
+.num { font-variant-numeric: tabular-nums; }
+.hidden { display: none !important; }
+
+/* ── Library ───────────────────── */
+.lib-file{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;margin-bottom:4px;font-size:13px;background:#f9fafb;border:1px solid var(--border);}
+.lib-file .fname{flex:1;font-weight:600;word-break:break-all;}
+.lib-score{font-size:10px;padding:2px 6px;border-radius:8px;font-weight:700;white-space:nowrap;}
+.lib-score.hi{background:#dcfce7;color:#15803d;}
+.lib-score.mid{background:#fef9c3;color:#a16207;}
+.lib-score.lo{background:#fee2e2;color:#b91c1c;}
+button.green{background:var(--success);}
+button.green:hover:not(:disabled){background:#0f6530;}
+
+@media print {
+  header .hbtn, details, .drop, button, .steps, #step2card, #dbgSection { display: none !important; }
+  .card { box-shadow: none; border: 1px solid var(--border); }
+  body { padding: 0; background: #fff; }
+}
 </style>
 </head>
 <body>
+<div class="wrap">
 
 <header>
   <div>
     <h1>💼 מחשבון שכר — בקרי מקורות דרום</h1>
-    <p>צביקה לויצקי | חישוב אוטומטי מסידור עבודה והשוואה לתלוש</p>
+    <p>שלב 1: סידור עבודה → תחזית שכר &nbsp;|&nbsp; שלב 2: תלוש → השוואה + ניתוח פערים</p>
   </div>
+  <button class="hbtn" onclick="window.print()">🖨️ הדפסה</button>
 </header>
 
-<div class="wrap">
+<!-- LIBRARY -->
+<div class="card" id="libraryCard">
+  <h2>📂 טעינה מהירה לפי חודש</h2>
 
-<!-- ── Steps ── -->
-<div class="steps">
-  <div class="step active" id="s1">פרמטרים</div>
-  <div class="step" id="s2">משמרות</div>
-  <div class="step" id="s3">חישוב</div>
-  <div class="step" id="s4">תלוש</div>
+  <div id="libSetup">
+    <div class="info mb">הגדר פעם אחת את התיקייה שמכילה את כל קבצי הסידורים והתלושים. לאחר מכן בחר חודש וטען הכל אוטומטית בלחיצה אחת.</div>
+    <div class="flex" style="align-items:center;gap:12px">
+      <button onclick="pickLibraryFolder()">📂 בחר תיקייה</button>
+      <label for="libDirFallback" style="cursor:pointer;background:#6b7280;color:#fff;padding:8px 14px;border-radius:6px;font-size:14px">📁 חלופה</label>
+      <input id="libDirFallback" type="file" webkitdirectory style="display:none">
+    </div>
+    <div id="libSetupStatus" class="mt" style="font-size:12px;color:var(--muted)"></div>
+  </div>
+
+  <div id="libReady" class="hidden">
+    <div class="flex mb" style="flex-wrap:wrap">
+      <span id="libFolderName" style="font-weight:700;color:var(--success);font-size:14px;flex:1"></span>
+      <button class="sec sml" onclick="_pickViaFrame()">🔄 החלף תיקייה</button>
+    </div>
+
+    <div class="flex" style="align-items:center;gap:10px">
+      <label style="font-size:13px;font-weight:600;white-space:nowrap">📅 חודש לטעינה:</label>
+      <div style="display:flex;align-items:center;border:2px solid var(--primary);border-radius:10px;background:#fff;overflow:hidden;box-shadow:0 1px 4px rgba(26,86,204,.12)">
+        <button onclick="libMonthNav(-12)" style="border:none;background:none;padding:8px 8px;cursor:pointer;font-size:11px;color:var(--primary);font-weight:800;border-left:1px solid #dbeafe" title="שנה קודמת">‹‹</button>
+        <button onclick="libMonthNav(-1)"  style="border:none;background:none;padding:8px 12px;cursor:pointer;font-size:20px;color:var(--primary);line-height:1;font-weight:300" title="חודש קודם">‹</button>
+        <span id="libMonthDisplay" style="font-size:14px;font-weight:700;min-width:135px;text-align:center;color:var(--primary)">—</span>
+        <button onclick="libMonthNav(1)"   style="border:none;background:none;padding:8px 12px;cursor:pointer;font-size:20px;color:var(--primary);line-height:1;font-weight:300" title="חודש הבא">›</button>
+        <button onclick="libMonthNav(12)"  style="border:none;background:none;padding:8px 8px;cursor:pointer;font-size:11px;color:var(--primary);font-weight:800;border-right:1px solid #dbeafe" title="שנה הבאה">››</button>
+      </div>
+      <input type="month" id="libMonth" class="hidden" onchange="_onLibMonthChange()">
+    </div>
+
+    <div id="libMatches" class="mt"></div>
+
+    <div class="flex mt">
+      <button class="green" id="libLoadBtn" onclick="loadLibraryFiles()" disabled>⚡ טען קבצים לחודש זה</button>
+      <button class="sec sml" onclick="document.getElementById('libAllFilesWrap').classList.toggle('hidden')">📋 כל הקבצים בתיקייה</button>
+    </div>
+
+    <div id="libAllFilesWrap" class="hidden mt">
+      <div class="grid2">
+        <div><h3>📄 קבצי Word בתיקייה</h3><div id="libDocxList"></div></div>
+        <div><h3>📑 קבצי PDF בתיקייה</h3><div id="libPdfList"></div></div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     א — PARAMETERS
-══════════════════════════════════════════ -->
+<div class="steps" id="stepsBar">
+  <div class="step active" id="stepDot1">סידור</div>
+  <div class="step" id="stepDot2">תחזית</div>
+  <div class="step" id="stepDot3">תלוש</div>
+  <div class="step" id="stepDot4">השוואה</div>
+</div>
+
+<!-- STEP 1 -->
 <div class="card">
-  <div class="card-hd hd-amber">⚙️ א — פרמטרים בסיסיים</div>
-  <div class="card-bd">
-    <div class="g3">
-      <div><label>ערך שעת עבודה (₪)</label><input type="number" id="p_rate" value="94.19" step="0.01" min="0"></div>
-      <div><label>תעריף שבת בקרים (₪)</label><input type="number" id="p_shab" value="278.30" step="0.01" min="0"></div>
-      <div><label>שעות כוננת חודשיות</label><input type="number" id="p_kon" value="15" step="0.5" min="0"></div>
-      <div><label>ימי חופשה</label><input type="number" id="p_vac" value="0" step="1" min="0"></div>
-      <div><label>ימי מחלה</label><input type="number" id="p_sick" value="0" step="1" min="0"></div>
-      <div><label>שם עובד (לחיפוש בסידור)</label><input type="text" id="p_name" value="צביקה לויצקי"></div>
+  <h2>📋 שלב 1 — סידור עבודה</h2>
+  <div class="info">העלה קובץ Word (<strong>.docx</strong>) של הסידור. הכלי ימצא את המשמרות שלך ויחשב את השכר.</div>
+
+  <div class="grid2">
+    <div>
+      <h3>קובץ סידור</h3>
+      <label class="drop" id="dzW" for="fiW">
+        <div class="ico">📄</div>
+        <div class="title">סידור Word</div>
+        <div class="sub" id="dzWsub">docx — לחץ או גרור</div>
+      </label>
+      <input type="file" id="fiW" accept=".docx" class="hidden" onchange="loadWord(this.files[0]); this.value=''">
     </div>
+
+    <div>
+      <h3>שמות לחיפוש בסידור</h3>
+      <div id="nameList" class="mb"></div>
+      <div class="flex">
+        <input type="text" id="nameInput" placeholder="הוסף שם..." style="flex:1" onkeydown="if(event.key==='Enter')addName()">
+        <button class="sec sml" onclick="addName()">+ הוסף</button>
+      </div>
+
+      <h3>חודש תלוש (עקיפה ידנית — אם הזיהוי שגוי)</h3>
+      <input type="month" id="monthOverride" style="width:100%"
+             title="השאר ריק לזיהוי אוטומטי (ברירת מחדל: החודש הקודם)">
+
+      <h3>תקופת סידור שזוהתה</h3>
+      <div id="monthDetected" style="padding:9px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--muted)">
+        ממתין לקובץ סידור…
+      </div>
+    </div>
+  </div>
+
+  <div id="st1" class="mt"></div>
+
+  <details id="dbgSection" class="hidden mt">
+    <summary>🔍 יומן קריאת Word</summary>
+    <div class="dbg" id="dbgWlog"></div>
+  </details>
+</div>
+
+<!-- SHIFT EDITOR -->
+<div class="card hidden" id="shiftEditorCard">
+  <h2>✏️ עריכת משמרות שזוהו</h2>
+  <div class="info">ניתן לתקן כמויות לפני החישוב — שינוי כאן מעדכן את התחזית מיד.</div>
+  <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>סוג משמרת</th><th>זוהה</th><th>לחישוב</th><th>ש"ג 100% לממוצע</th><th>ש"ג 200% לממוצע</th></tr></thead>
+      <tbody id="editorBody"></tbody>
+    </table>
+  </div>
+  <div class="flex mt" style="gap:14px;align-items:center;flex-wrap:wrap">
+    <button onclick="recalcFromEditor()">🔄 עדכן חישוב</button>
+    <button class="sec" onclick="resetEditor()">↩ אפס לזוהה</button>
+    <span style="width:1px;height:28px;background:var(--border);display:inline-block"></span>
+    <label style="font-size:12px;font-weight:700">נוסחה:</label>
+    <button id="fBtn-mekorot" class="sml formula-btn active" onclick="setFormula('mekorot')" title="חישוב לפי סוג משמרת — לילה/שבת=200% ישיר">🏢 מקורות</button>
+    <button id="fBtn-patrick" class="sml formula-btn" onclick="setFormula('patrick')" title="חישוב לפי מכסה חודשית — שעות שעבדת פחות תקן">📊 אקסל</button>
+    <span style="width:1px;height:28px;background:var(--border);display:inline-block"></span>
+    <label style="font-size:12px;font-weight:700">שעות תקן:</label>
+    <input type="number" id="monthlyStdInput" value="163.5" min="100" max="230" step="0.5"
+      style="width:80px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;text-align:center;font-size:13px"
+      onchange="monthlyStd=parseFloat(this.value)||163.5;calcForecastFromCounts()"
+      title="שעות תקן חודשי — לפי לוח שנה">
+    <label style="font-size:12px;font-weight:700">משמרות היעדרות:</label>
+    <input type="number" id="vacationShiftsInput" value="0" min="0" max="30" step="1"
+      style="width:65px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;text-align:center;font-size:13px"
+      onchange="nVacationShifts=parseInt(this.value)||0;calcForecastFromCounts()"
+      title="מספר משמרות שלא עבדת (חופש+מחלה) — מפחית את המכסה הנדרשת">
+    <span style="font-size:11px;color:var(--muted)">(חופש/מחלה/מילואים)</span>
+    <span style="width:1px;height:28px;background:var(--border);display:inline-block"></span>
+    <label style="font-size:12px;font-weight:700">שעות בפועל:</label>
+    <input type="number" id="actualHoursInput" value="" min="0" max="300" step="0.5"
+      style="width:75px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;text-align:center;font-size:13px"
+      onchange="actualHoursOverride=this.value?parseFloat(this.value):null;calcForecastFromCounts()"
+      placeholder="אוטו"
+      title="שעות עבודה בפועל — עוקף את חישוב שעות הסידור. השאר ריק לחישוב אוטומטי.">
+    <span style="font-size:11px;color:var(--muted)">(ריק=אוטו)</span>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     ב — SHIFTS
-══════════════════════════════════════════ -->
-<div class="card">
-  <div class="card-hd hd-blue">📋 ב — ספר משמרות</div>
-  <div class="card-bd">
+<!-- FORECAST -->
+<div class="card hidden" id="forecastCard">
+  <h2>💰 תחזית שכר</h2>
+  <div class="stats" id="shiftStats"></div>
+  <div class="total-box">
+    <div class="lbl">סה"כ תוספות משמרות</div>
+    <div class="amount num" id="totalForecast">—</div>
+    <div class="sub">לא כולל שכר בסיס קבוע ותנאים נוספים</div>
+  </div>
+  <table>
+    <thead><tr><th>רכיב</th><th>כמות</th><th>תעריף</th><th>סכום</th></tr></thead>
+    <tbody id="forecastBody"></tbody>
+  </table>
+  <details class="mt">
+    <summary>🔢 פירוט רכיבי ש"ג 100%</summary>
+    <div id="tot100Breakdown" style="padding:8px 4px;font-size:13px"></div>
+  </details>
+  <details class="mt">
+    <summary>📅 פירוט ימי משמרות</summary>
+    <table style="margin-top:8px">
+      <thead><tr><th>תאריך</th><th>יום</th><th>משמרת</th><th>ש"ג 100%</th><th>ש"ג 200%</th><th>שבת</th></tr></thead>
+      <tbody id="shiftTableBody"></tbody>
+    </table>
+  </details>
+</div>
 
-    <!-- AI provider for parsing -->
-    <div class="card-hd hd-purple" style="border-radius:7px;margin-bottom:12px;font-size:.83rem">🤖 ניתוח AI — העלאת קובץ Word</div>
+<!-- AI ANALYSIS -->
+<div class="card hidden" id="aiCard">
+  <h2>🤖 ניתוח AI</h2>
 
-    <!-- Provider selection -->
-    <div class="ptabs">
-      <div class="ptab sel" id="pt-gemini" onclick="selProvider('gemini')">
-        <div class="logo gemini">G</div>
-        <div><div style="font-weight:700">Gemini</div><div class="muted">Google</div></div>
-        <div class="check">✓</div>
+  <!-- Provider selector -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+    <div class="ai-prov-card" id="prov-claude" onclick="selectAiProvider('claude')">
+      <div class="ai-prov-icon" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
       </div>
-      <div class="ptab" id="pt-claude" onclick="selProvider('claude')">
-        <div class="logo claude">C</div>
-        <div><div style="font-weight:700">Claude</div><div class="muted">Anthropic</div></div>
-        <div class="check">✓</div>
+      <div class="ai-prov-info">
+        <div class="ai-prov-name">Claude</div>
+        <div class="ai-prov-company">Anthropic</div>
       </div>
+      <div class="ai-prov-status" id="status-claude">○</div>
     </div>
-
-    <!-- API key input -->
-    <div id="key-gemini">
-      <label>מפתח API — Gemini (Google AI Studio)</label>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="password" id="gemini_key" placeholder="AIza..." style="flex:1">
-        <button class="btn btn-gray btn-sm" onclick="toggleKey('gemini_key')">👁</button>
+    <div class="ai-prov-card" id="prov-gemini" onclick="selectAiProvider('gemini')">
+      <div class="ai-prov-icon" style="background:linear-gradient(135deg,#1a73e8,#0d47a1)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       </div>
-      <p class="muted mt" style="margin-top:4px">🔒 המפתח נשמר בדפדפן שלך בלבד — לא נשלח לשום שרת חיצוני</p>
-    </div>
-    <div id="key-claude" class="hidden">
-      <label>מפתח API — Claude (Anthropic)</label>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="password" id="claude_key" placeholder="sk-ant-..." style="flex:1">
-        <button class="btn btn-gray btn-sm" onclick="toggleKey('claude_key')">👁</button>
+      <div class="ai-prov-info">
+        <div class="ai-prov-name">Gemini</div>
+        <div class="ai-prov-company">Google</div>
       </div>
-      <p class="muted mt" style="margin-top:4px">🔒 המפתח נשמר בדפדפן שלך בלבד</p>
+      <div class="ai-prov-status" id="status-gemini">○</div>
     </div>
+  </div>
 
-    <hr>
-
-    <!-- Word upload -->
-    <div class="uz" id="dz" onclick="document.getElementById('sched_file').click()">
-      <div class="ico">📄</div>
-      <p><strong>לחץ לבחירה</strong> או גרור קובץ Word (.docx) עם סידור העבודה</p>
-      <p class="finfo hidden" id="sched_fname"></p>
-      <input type="file" id="sched_file" accept=".docx" onchange="onSchedFile(this)">
+  <!-- API key input -->
+  <div style="background:#f9fafb;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px">
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px" id="aiKeyLabel">מפתח API — Claude (Anthropic)</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="password" id="aiKeyInput"
+        placeholder="sk-ant-api03-..."
+        style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:monospace;background:#fff"
+        oninput="onAiKeyInput(this.value)">
+      <button class="sec sml" onclick="toggleKeyVisibility()" id="toggleKeyBtn" title="הצג/הסתר מפתח" style="padding:7px 10px">👁</button>
     </div>
-    <div class="fr">
-      <button class="btn btn-purple" id="btn-parse" onclick="parseSchedule()" disabled>🔍 נתח סידור עם AI</button>
+    <div style="margin-top:8px;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+      <span>🔒 המפתח נשמר בדפדפן שלך בלבד — לא נשלח לשום שרת חיצוני</span>
+      <a id="aiKeyLink" href="https://console.anthropic.com/" target="_blank" style="color:var(--primary);text-decoration:none;font-weight:600">קבל מפתח ←</a>
     </div>
-    <div id="parse-loading" class="loading hidden">⏳ מנתח סידור עבודה...</div>
-    <div id="parse-err" class="hidden"></div>
+  </div>
 
-    <!-- Parsed preview -->
-    <div id="parsed-preview" class="hidden mt">
-      <div class="alert a-ok" id="parsed-sum"></div>
-      <div class="ovx">
-        <table class="tbl">
-          <thead><tr><th>סוג משמרת</th><th>כמות</th><th>ש"ג 100%</th><th>ש"ג 200%</th><th>שבת בקרים</th></tr></thead>
-          <tbody id="parsed-tbody"></tbody>
-        </table>
-      </div>
-    </div>
+  <!-- Action buttons -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+    <button onclick="runAiAnalysis()" id="aiRunBtn" disabled
+      style="flex:1;min-width:140px;padding:10px 16px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px">
+      <span id="aiRunIcon">🤖</span> <span id="aiRunLabel">נתח עם Claude</span>
+    </button>
+    <button class="sec" onclick="runAiAnalysis(true)"
+      style="padding:10px 16px;font-size:13px">💡 ניתוח מקומי</button>
+  </div>
 
-    <hr>
+  <!-- Output -->
+  <div id="aiOutput"
+    style="white-space:pre-wrap;font-size:13px;line-height:1.8;background:#fff;border-radius:10px;padding:16px;border:1px solid var(--border);min-height:80px;direction:rtl;color:var(--text)"></div>
+</div>
 
-    <!-- Manual entry -->
-    <p class="muted" style="margin-bottom:10px">✏️ הזנה ידנית / עריכה של המשמרות:</p>
-    <div class="sg" id="shift-inputs"></div>
+<!-- STEP 2 -->
+<div class="card" id="step2card">
+  <h2>🧾 שלב 2 — תלוש שכר (אופציונלי)</h2>
+  <div class="info">העלה תלוש PDF כדי להשוות את התחזית לשכר ששולם בפועל.</div>
+  <label class="drop" id="dzP" for="fiP">
+    <div class="ico">📑</div>
+    <div class="title">תלוש שכר PDF</div>
+    <div class="sub" id="dzPsub">לחץ או גרור</div>
+  </label>
+  <input type="file" id="fiP" accept=".pdf" class="hidden" onchange="loadPayslip(this.files[0]); this.value=''">
+  <div id="st2" class="mt"></div>
+</div>
 
-    <div class="fr">
-      <button class="btn btn-green" onclick="calcSalary()">🧮 חשב שכר</button>
-    </div>
+<!-- COMPARISON -->
+<div class="card hidden" id="compareCard">
+  <h2>📊 השוואה: תחזית מול תלוש</h2>
+  <div id="diffSummary"></div>
+  <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>רכיב</th><th>תחזית</th><th>מהתלוש</th><th>הפרש</th><th>סטטוס</th></tr></thead>
+      <tbody id="compareBody"></tbody>
+    </table>
+  </div>
+  <details class="mt">
+    <summary>🔎 ניתוח פערים מפורט</summary>
+    <div id="analysis" style="padding:10px 0;font-size:13px;line-height:1.8"></div>
+  </details>
+  <details class="mt" id="dbgPayslip" style="display:none">
+    <summary>🛠 יומן ניתוח תלוש</summary>
+    <div class="dbg" id="dbgPlog"></div>
+  </details>
+</div>
+
+<!-- HISTORY CARD -->
+<div class="card hidden" id="historyCard">
+  <h2 style="display:flex;align-items:center;justify-content:space-between">
+    <span>📈 היסטוריה ומגמות</span>
+    <button class="sec sml" onclick="_histClear()">🗑 נקה הכל</button>
+  </h2>
+  <div id="historyPattern" style="margin-bottom:10px"></div>
+  <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>חודש</th><th>תחזית</th><th>בפועל</th><th>הפרש</th><th>מקור</th><th>סטטוס</th><th></th></tr></thead>
+      <tbody id="historyBody"></tbody>
+    </table>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     ג+ד — RESULTS
-══════════════════════════════════════════ -->
-<div class="card hidden" id="sec-res">
-  <div class="card-hd hd-green">🧮 ג+ד — שעות ותשלומים</div>
-  <div class="card-bd">
-
-    <h3 style="font-size:.9rem;color:var(--blue-d);margin-bottom:8px">ג — סיכום שעות גמר</h3>
-    <div class="ovx">
-      <table class="tbl">
-        <thead><tr><th>רכיב</th><th>ש"ג 100%</th><th>ש"ג 200%</th><th>שבת בקרים</th></tr></thead>
-        <tbody id="hours-tbody"></tbody>
-      </table>
-    </div>
-
-    <hr>
-    <h3 style="font-size:.9rem;color:var(--blue-d);margin-bottom:8px">פירוט לפי סוג משמרת</h3>
-    <div class="ovx">
-      <table class="tbl">
-        <thead><tr><th>משמרת</th><th>כמות</th><th>ש"ג 100%</th><th>ש"ג 200%</th><th>שבת בקרים</th></tr></thead>
-        <tbody id="break-tbody"></tbody>
-      </table>
-    </div>
-
-    <hr>
-    <h3 style="font-size:.9rem;color:var(--blue-d);margin-bottom:8px">ד — חישוב תשלומים</h3>
-    <div class="pboxes" id="pboxes"></div>
-
-  </div>
 </div>
-
-<!-- ══════════════════════════════════════════
-     ה — PAYSLIP COMPARISON
-══════════════════════════════════════════ -->
-<div class="card hidden" id="sec-cmp">
-  <div class="card-hd hd-gray">📑 ה — השוואה לתלוש שכר</div>
-  <div class="card-bd">
-
-    <!-- Provider for payslip -->
-    <div class="ptabs" style="margin-bottom:10px">
-      <div class="ptab sel" id="pt2-gemini" onclick="selProvider2('gemini')">
-        <div class="logo gemini">G</div>
-        <div><div style="font-weight:700">Gemini</div><div class="muted">Google</div></div>
-        <div class="check">✓</div>
-      </div>
-      <div class="ptab" id="pt2-claude" onclick="selProvider2('claude')">
-        <div class="logo claude">C</div>
-        <div><div style="font-weight:700">Claude</div><div class="muted">Anthropic</div></div>
-        <div class="check">✓</div>
-      </div>
-    </div>
-
-    <div class="uz" id="dz2" onclick="document.getElementById('slip_file').click()">
-      <div class="ico">🧾</div>
-      <p><strong>לחץ לבחירה</strong> או גרור תלוש שכר (JPG / PNG / PDF)</p>
-      <p class="finfo hidden" id="slip_fname"></p>
-      <input type="file" id="slip_file" accept=".jpg,.jpeg,.png,.pdf" onchange="onSlipFile(this)">
-    </div>
-    <div class="fr">
-      <button class="btn btn-blue" id="btn-analyze" onclick="analyzePayslip()" disabled>🔍 נתח תלוש עם AI</button>
-      <button class="btn btn-gray" onclick="localAnalysis()">💡 ניתוח מקומי</button>
-    </div>
-    <div id="slip-loading" class="loading hidden">⏳ מנתח תלוש שכר...</div>
-    <div id="slip-err" class="hidden"></div>
-
-    <!-- Comparison result -->
-    <div id="cmp-result" class="hidden">
-      <hr>
-      <h3 style="font-size:.9rem;color:var(--blue-d);margin-bottom:8px">טבלת השוואה</h3>
-
-      <!-- Manual payslip entry if no AI -->
-      <div id="manual-slip-entry" class="hidden">
-        <p class="muted" style="margin-bottom:10px">הזן ידנית את הסכומים מהתלוש (השאר 0 אם לא מופיע):</p>
-        <div class="g3" style="margin-bottom:12px">
-          <div><label>ש"ג 100% (₪)</label><input type="number" id="ms_100" value="0" step="0.01"></div>
-          <div><label>ש"ג 200% (₪)</label><input type="number" id="ms_200" value="0" step="0.01"></div>
-          <div><label>שבת בקרים (₪)</label><input type="number" id="ms_shab" value="0" step="0.01"></div>
-          <div><label>כוננות (₪)</label><input type="number" id="ms_kon" value="0" step="0.01"></div>
-          <div><label>סה"כ תוספות (₪)</label><input type="number" id="ms_tot" value="0" step="0.01"></div>
-          <div><label>שכר ברוטו (₪)</label><input type="number" id="ms_gross" value="0" step="0.01"></div>
-        </div>
-        <div class="fr"><button class="btn btn-green btn-sm" onclick="buildCompTable(manualSlipData())">עדכן השוואה</button></div>
-        <hr>
-      </div>
-
-      <div class="ovx">
-        <table class="tbl">
-          <thead><tr><th>רכיב</th><th>חישוב מסידור</th><th>מהתלוש</th><th>הפרש</th><th>סטטוס</th></tr></thead>
-          <tbody id="cmp-tbody"></tbody>
-        </table>
-      </div>
-      <hr>
-      <h3 style="font-size:.9rem;color:var(--blue-d);margin-bottom:8px">🤖 ניתוח AI</h3>
-      <div id="ai-loading" class="loading hidden">⏳ מנתח הפרשים...</div>
-      <div class="abox hidden" id="abox"></div>
-    </div>
-  </div>
-</div>
-
-</div><!-- /wrap -->
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
-// ════════════════════════════════════════════
-// DATA
-// ════════════════════════════════════════════
-const SHIFTS = [
-  {key:'morning_weekday',              label:'בוקר חול',                    shab:false, h100:0.5,  h200:0},
-  {key:'morning_shabbat',              label:'בוקר שבת',                    shab:true,  h100:0,    h200:8.5},
-  {key:'afternoon_weekday',            label:'צהריים חול',                   shab:false, h100:0.5,  h200:0},
-  {key:'afternoon_friday',             label:'צהריים שישי',                  shab:false, h100:0,    h200:4.5},
-  {key:'afternoon_shabbat',            label:'צהריים שבת',                   shab:true,  h100:0,    h200:8.5},
-  {key:'night_weekday',                label:'לילה חול',                    shab:false, h100:0,    h200:8.5},
-  {key:'night_friday_shabbat',         label:'לילה שישי/שבת',               shab:true,  h100:0,    h200:8.5},
-  {key:'double_morning_afternoon_weekday',        label:'כפולה בוקר+צהריים חול',  shab:false, h100:4.33, h200:0},
-  {key:'double_morning_afternoon_shabbat',        label:'כפולה בוקר+צהריים שבת',  shab:true,  h100:0,    h200:12.83},
-  {key:'double_afternoon_night_weekday',          label:'כפולה צהריים+לילה חול',  shab:false, h100:4.33, h200:0},
-  {key:'double_afternoon_night_friday_shabbat',   label:'כפולה צהריים+לילה שישי/שבת', shab:true, h100:0, h200:13},
-];
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ════════════════════════════════════════════
-// STATE
-// ════════════════════════════════════════════
-let state = {
-  provider:'gemini', provider2:'gemini',
-  schedFile:null, slipFile:null,
-  parsedCounts:{}, calcResult:null, payslipData:null,
+const HR       = 94.19;
+const SAB_RATE = 278.30;
+const STANDBY  = 15;
+const HDAYS    = ['א','ב','ג','ד','ה','ו','ש'];
+
+const LABELS = {
+  morning:   'בוקר',
+  afternoon: 'צהריים',
+  night:     'לילה',
+  double_ma: 'כפולה בוקר+צהריים',
+  double_an: 'כפולה צהריים+לילה',
 };
 
-// ════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded',()=>{
-  buildShiftInputs();
-  setupDrop('dz','sched_file');
-  setupDrop('dz2','slip_file');
-  loadKeys();
-});
+// Patrick's formula — shift classification
+const SHIFT_COUNT_MAP  = { morning:1, afternoon:1, night:1, double_ma:2, double_an:2 };
+const IS_MORNING_MAP   = { morning:1, afternoon:0, night:0, double_ma:1, double_an:0 };
+const IS_NIGHT_MAP     = { morning:0, afternoon:0, night:1, double_ma:0, double_an:1 };
+const HOURS_PER_SHIFT  = 8.5;
 
-function buildShiftInputs(){
-  const c=document.getElementById('shift-inputs'); c.innerHTML='';
-  SHIFTS.forEach(s=>{
-    const d=document.createElement('div');
-    d.className='si'+(s.shab?' shab':'');
-    d.innerHTML=`<span>${s.label}</span>
-      <input type="number" id="m_${s.key}" value="0" min="0" step="1" onchange="onManual()">`;
-    c.appendChild(d);
+let monthlyStd          = 163.5;  // שעות תקן חודשי
+let nVacationShifts     = 0;      // משמרות היעדרות (חופש+מחלה)
+let actualHoursOverride = null;   // כשמוגדר — מחליף nShifts×8.5 בחישוב
+let formulaMode = 'mekorot'; // 'mekorot' | 'patrick'
+
+const SHIFT_TYPES_ORDER = ['morning','afternoon','night','double_ma','double_an'];
+
+let myNames      = ['צביקה','צבי'];
+let shifts       = [];
+let parsedCounts = {};
+let editorCounts = {};
+let calc         = null;
+let slip         = null;
+let hoursSlip    = null;
+let scheduleMonth = null;
+
+// ── Names ──────────────────────────────────────────────────────────────────
+function renderNames() {
+  document.getElementById('nameList').innerHTML = myNames.map(n =>
+    `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--primary);color:#fff;
+      padding:2px 9px;border-radius:10px;margin:0 3px 4px 0;font-size:12px;font-weight:600">
+      ${n}<span onclick="removeName('${n}')" style="cursor:pointer;font-size:14px">×</span>
+    </span>`).join('');
+}
+function addName() {
+  const v = document.getElementById('nameInput').value.trim();
+  if (v && !myNames.includes(v)) { myNames.push(v); renderNames(); }
+  document.getElementById('nameInput').value = '';
+}
+function removeName(n) { myNames = myNames.filter(x => x !== n); renderNames(); }
+renderNames();
+
+// ── Drag-and-drop ──────────────────────────────────────────────────────────
+function setupDrop(id, fn) {
+  const el = document.getElementById(id);
+  el.addEventListener('dragover',  e => { e.preventDefault(); el.classList.add('over'); });
+  el.addEventListener('dragleave', ()  => el.classList.remove('over'));
+  el.addEventListener('drop', e => {
+    e.preventDefault(); el.classList.remove('over');
+    if (e.dataTransfer.files[0]) fn(e.dataTransfer.files[0]);
   });
 }
+setupDrop('dzW', f => loadWord(f));
+setupDrop('dzP', f => loadPayslip(f));
 
-// ════════════════════════════════════════════
-// PROVIDER TABS
-// ════════════════════════════════════════════
-function selProvider(p){
-  state.provider=p;
-  document.getElementById('pt-gemini').classList.toggle('sel',p==='gemini');
-  document.getElementById('pt-claude').classList.toggle('sel',p==='claude');
-  document.getElementById('key-gemini').classList.toggle('hidden',p!=='gemini');
-  document.getElementById('key-claude').classList.toggle('hidden',p==='gemini');
-}
-function selProvider2(p){
-  state.provider2=p;
-  document.getElementById('pt2-gemini').classList.toggle('sel',p==='gemini');
-  document.getElementById('pt2-claude').classList.toggle('sel',p==='claude');
-}
-function toggleKey(id){
-  const el=document.getElementById(id);
-  el.type=el.type==='password'?'text':'password';
-}
-function loadKeys(){
-  const gk=localStorage.getItem('gemini_key')||'';
-  const ck=localStorage.getItem('claude_key')||'';
-  if(gk) document.getElementById('gemini_key').value=gk;
-  if(ck) document.getElementById('claude_key').value=ck;
-}
-function saveKeys(){
-  const gk=document.getElementById('gemini_key').value.trim();
-  const ck=document.getElementById('claude_key').value.trim();
-  if(gk) localStorage.setItem('gemini_key',gk);
-  if(ck) localStorage.setItem('claude_key',ck);
-}
-function getKey(p){
-  if(p==='gemini') return document.getElementById('gemini_key').value.trim();
-  return document.getElementById('claude_key').value.trim();
-}
+// ── Debug ──────────────────────────────────────────────────────────────────
+const dbgW = s => { const el = document.getElementById('dbgWlog'); if(el) el.textContent += s+'\n'; };
+const dbgP = s => { const el = document.getElementById('dbgPlog'); if(el) el.textContent += s+'\n'; };
 
-// ════════════════════════════════════════════
-// DRAG & DROP
-// ════════════════════════════════════════════
-function setupDrop(zId,inputId){
-  const z=document.getElementById(zId);
-  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag')});
-  z.addEventListener('dragleave',()=>z.classList.remove('drag'));
-  z.addEventListener('drop',e=>{
-    e.preventDefault();z.classList.remove('drag');
-    const f=e.dataTransfer.files[0];
-    if(f){document.getElementById(inputId).files=e.dataTransfer.files;document.getElementById(inputId).dispatchEvent(new Event('change'))}
-  });
-}
-
-// ════════════════════════════════════════════
-// FILE HANDLERS
-// ════════════════════════════════════════════
-function onSchedFile(inp){
-  const f=inp.files[0]; if(!f)return;
-  state.schedFile=f;
-  showFile('sched_fname',f.name);
-  document.getElementById('btn-parse').disabled=false;
-  hide('parse-err');
-}
-function onSlipFile(inp){
-  const f=inp.files[0]; if(!f)return;
-  state.slipFile=f;
-  showFile('slip_fname',f.name);
-  document.getElementById('btn-analyze').disabled=false;
-  hide('slip-err');
-}
-function showFile(id,name){
-  const el=document.getElementById(id);
-  el.textContent='📎 '+name; el.classList.remove('hidden');
-}
-function onManual(){
-  // nothing needed — calc on button click
-}
-
-// ════════════════════════════════════════════
-// PARSE SCHEDULE
-// ════════════════════════════════════════════
-async function parseSchedule(){
-  const key=getKey(state.provider);
-  if(!key){showErr('parse-err','נא להזין מפתח API של '+state.provider);return;}
-  saveKeys();
-
-  const btn=document.getElementById('btn-parse');
-  btn.disabled=true; btn.innerHTML='<span class="spin"></span> מנתח...';
-  show('parse-loading'); hide('parse-err');
-  document.getElementById('parsed-preview').classList.add('hidden');
-
-  try{
-    const text=await readDocx(state.schedFile);
-    const empName=document.getElementById('p_name').value.trim();
-    let result;
-    if(state.provider==='gemini') result=await geminiParseSchedule(key,text,empName);
-    else                           result=await claudeParseSchedule(key,text,empName);
-
-    state.parsedCounts=result.shift_counts||{};
-    syncToManual(state.parsedCounts);
-    showParsedPreview(result);
-    setStep(2);
-  }catch(e){showErr('parse-err',e.message);}
-  finally{btn.disabled=false;btn.innerHTML='🔍 נתח סידור עם AI';hide('parse-loading');}
-}
-
-// Read .docx as plain text using mammoth (CDN) or raw XML fallback
-async function readDocx(file){
-  // Try to extract text from docx by parsing XML inside the zip
-  const ab=await file.arrayBuffer();
-  const decoder=new TextDecoder('utf-8');
-  // docx is a zip — find word/document.xml
-  try{
-    const {JSZip}=window; // optional
-    if(typeof JSZip!=='undefined'){
-      const zip=await JSZip.loadAsync(ab);
-      const xml=await zip.file('word/document.xml').async('string');
-      return xml.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-    }
-  }catch(e){}
-  // Fallback: read raw bytes and extract visible text heuristically
-  const raw=decoder.decode(ab);
-  return raw.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,8000);
-}
-
-// ════════════════════════════════════════════
-// GEMINI API  (model: gemini-2.5-flash-preview-05-20)
-// ════════════════════════════════════════════
-const GEMINI_MODEL='gemini-2.5-flash-preview-05-20';
-
-async function geminiRequest(key, parts){
-  const url=`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
-  const body={contents:[{parts}]};
-  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!r.ok){const e=await r.json();throw new Error('Gemini: '+(e.error?.message||r.statusText));}
-  const d=await r.json();
-  return d.candidates?.[0]?.content?.parts?.[0]?.text||'';
-}
-
-async function geminiParseSchedule(key,text,empName){
-  const nameCtx=empName?`חפש ספציפית את "${empName}".`:'';
-  const prompt=schedulePrompt(text,nameCtx);
-  const raw=await geminiRequest(key,[{text:prompt}]);
-  return parseJSON(raw);
-}
-
-async function geminiAnalyzePayslip(key,file){
-  const {b64,mime}=await fileToBase64(file);
-  const prompt=payslipPrompt();
-  const raw=await geminiRequest(key,[
-    {inline_data:{mime_type:mime,data:b64}},
-    {text:prompt}
-  ]);
-  return parseJSON(raw);
-}
-
-async function geminiCompare(key,calcResult,payslipData){
-  const prompt=comparePrompt(calcResult,payslipData);
-  return await geminiRequest(key,[{text:prompt}]);
-}
-
-// ════════════════════════════════════════════
-// CLAUDE API  (model: claude-opus-4-7)
-// ════════════════════════════════════════════
-const CLAUDE_MODEL='claude-opus-4-7';
-
-async function claudeRequest(key,messages,system=''){
-  const body={model:CLAUDE_MODEL,max_tokens:2048,messages};
-  if(system) body.system=system;
-  const r=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify(body)
-  });
-  if(!r.ok){const e=await r.json();throw new Error('Claude: '+(e.error?.message||r.statusText));}
-  const d=await r.json();
-  return d.content?.[0]?.text||'';
-}
-
-async function claudeParseSchedule(key,text,empName){
-  const nameCtx=empName?`חפש ספציפית את "${empName}".`:'';
-  const raw=await claudeRequest(key,[{role:'user',content:schedulePrompt(text,nameCtx)}]);
-  return parseJSON(raw);
-}
-
-async function claudeAnalyzePayslip(key,file){
-  const {b64,mime}=await fileToBase64(file);
-  const r=await claudeRequest(key,[{role:'user',content:[
-    {type:'image',source:{type:'base64',media_type:mime,data:b64}},
-    {type:'text',text:payslipPrompt()}
-  ]}]);
-  return parseJSON(r);
-}
-
-async function claudeCompare(key,calcResult,payslipData){
-  return await claudeRequest(key,[{role:'user',content:comparePrompt(calcResult,payslipData)}]);
-}
-
-// ════════════════════════════════════════════
-// PROMPTS
-// ════════════════════════════════════════════
-function schedulePrompt(text,nameCtx){
-  return `אתה מנתח סידורי עבודה לבקרי מקורות. ${nameCtx}
-
-סוגי משמרות:
-morning_weekday=בוקר חול | morning_shabbat=בוקר שבת | afternoon_weekday=צהריים חול
-afternoon_friday=צהריים שישי | afternoon_shabbat=צהריים שבת | night_weekday=לילה חול
-night_friday_shabbat=לילה שישי/שבת | double_morning_afternoon_weekday=כפולה בוקר+צהריים חול
-double_morning_afternoon_shabbat=כפולה בוקר+צהריים שבת | double_afternoon_night_weekday=כפולה צהריים+לילה חול
-double_afternoon_night_friday_shabbat=כפולה צהריים+לילה שישי/שבת
-
-תוכן הסידור:
----
-${text.substring(0,6000)}
----
-
-החזר JSON בלבד:
-{"employee_name":"","month":"","shift_counts":{"morning_weekday":0,"morning_shabbat":0,"afternoon_weekday":0,"afternoon_friday":0,"afternoon_shabbat":0,"night_weekday":0,"night_friday_shabbat":0,"double_morning_afternoon_weekday":0,"double_morning_afternoon_shabbat":0,"double_afternoon_night_weekday":0,"double_afternoon_night_friday_shabbat":0},"total_shifts":0,"notes":""}`;
-}
-
-function payslipPrompt(){
-  return `נתח תלוש שכר ישראלי זה. חלץ את כל הרכיבים.
-החזר JSON בלבד:
-{"employee_name":"","month":"","gross_salary":0,"net_salary":0,"components":{"payment_100":0,"payment_200":0,"shabbat_payment":0,"konenut_payment":0,"total_shift_extras":0},"deductions":{"income_tax":0,"national_insurance":0,"health_insurance":0,"pension":0,"other":0},"raw_items":[{"name":"","amount":0}]}
-אם שדה לא נמצא השתמש ב-0.`;
-}
-
-function comparePrompt(calc,slip){
-  const p=calc.payments||{};
-  const c=slip.components||{};
-  return `השווה בין חישוב שכר לתלוש. כתוב בעברית, מקצועי וברור.
-
-חישוב מסידור:
-ש"ג 100%: ${fmt(p.payment_100)} ₪ | ש"ג 200%: ${fmt(p.payment_200)} ₪
-שבת בקרים: ${fmt(p.shabbat_payment)} ₪ | כוננות: ${fmt(p.konenut_payment)} ₪
-סה"כ תוספות: ${fmt(p.total)} ₪
-
-נתוני תלוש:
-ש"ג 100%: ${fmt(c.payment_100)} ₪ | ש"ג 200%: ${fmt(c.payment_200)} ₪
-שבת בקרים: ${fmt(c.shabbat_payment)} ₪ | כוננות: ${fmt(c.konenut_payment)} ₪
-סה"כ תוספות (תלוש): ${fmt(c.total_shift_extras)} ₪
-ברוטו: ${fmt(slip.gross_salary)} ₪ | נטו: ${fmt(slip.net_salary)} ₪
-
-נתח: 1) האם שולם נכון? 2) הפרשים לפי רכיב 3) סיבות אפשריות 4) המלצה לפעולה`;
-}
-
-// ════════════════════════════════════════════
-// PAYSLIP ANALYSIS
-// ════════════════════════════════════════════
-async function analyzePayslip(){
-  const key=getKey(state.provider2);
-  if(!key){showErr('slip-err','נא להזין מפתח API של '+state.provider2);return;}
-  saveKeys();
-
-  const btn=document.getElementById('btn-analyze');
-  btn.disabled=true; btn.innerHTML='<span class="spin"></span> מנתח...';
-  show('slip-loading'); hide('slip-err');
-  document.getElementById('cmp-result').classList.add('hidden');
-
-  try{
-    let slipData;
-    if(state.provider2==='gemini') slipData=await geminiAnalyzePayslip(key,state.slipFile);
-    else                            slipData=await claudeAnalyzePayslip(key,state.slipFile);
-
-    state.payslipData=slipData;
-    buildCompTable(slipData);
-    await runAICompare(key);
-    setStep(4);
-  }catch(e){showErr('slip-err',e.message);}
-  finally{btn.disabled=false;btn.innerHTML='🔍 נתח תלוש עם AI';hide('slip-loading');}
-}
-
-function localAnalysis(){
-  // Show manual entry form
-  document.getElementById('cmp-result').classList.remove('hidden');
-  document.getElementById('manual-slip-entry').classList.remove('hidden');
-  hide('abox'); hide('ai-loading');
-  buildCompTable(manualSlipData());
-  setStep(4);
-}
-
-function manualSlipData(){
-  return {components:{
-    payment_100:   +document.getElementById('ms_100').value||0,
-    payment_200:   +document.getElementById('ms_200').value||0,
-    shabbat_payment:+document.getElementById('ms_shab').value||0,
-    konenut_payment:+document.getElementById('ms_kon').value||0,
-    total_shift_extras:+document.getElementById('ms_tot').value||0,
-  },gross_salary:+document.getElementById('ms_gross').value||0,net_salary:0};
-}
-
-function buildCompTable(slipData){
-  if(!state.calcResult)return;
-  const cp=state.calcResult.payments;
-  const pp=slipData.components||{};
-  const rows=[
-    {label:'ש"ג 100%',    calc:cp.payment_100,    slip:pp.payment_100},
-    {label:'ש"ג 200%',    calc:cp.payment_200,    slip:pp.payment_200},
-    {label:'שבת בקרים',  calc:cp.shabbat_payment, slip:pp.shabbat_payment},
-    {label:'כוננות',      calc:cp.konenut_payment, slip:pp.konenut_payment},
-    {label:'סה"כ תוספות', calc:cp.total,           slip:pp.total_shift_extras},
-  ];
-  const tb=document.getElementById('cmp-tbody'); tb.innerHTML='';
-  rows.forEach((r,i)=>{
-    const cv=Number(r.calc||0), pv=Number(r.slip||0);
-    const diff=pv-cv, abs=Math.abs(diff);
-    const isTotal=i===rows.length-1;
-    let ds,badge,cls;
-    if(pv===0&&cv===0){ds='—';badge='<span class="badge b-ok">—</span>';cls='dzero';}
-    else if(abs<1){ds='✓';badge='<span class="badge b-ok">תקין</span>';cls='dzero';}
-    else if(diff>0){ds=`+₪${fmt(abs)}`;badge='<span class="badge b-warn">יתרה</span>';cls='dpos';}
-    else{ds=`-₪${fmt(abs)}`;badge='<span class="badge b-err">חסר</span>';cls='dneg';}
-    tb.innerHTML+=`<tr ${isTotal?'class="tr-tot"':''}>
-      <td>${r.label}</td>
-      <td class="num">₪${fmt(cv)}</td>
-      <td class="num">${pv===0?'—':'₪'+fmt(pv)}</td>
-      <td class="num ${cls}">${ds}</td>
-      <td>${badge}</td>
-    </tr>`;
-  });
-  document.getElementById('cmp-result').classList.remove('hidden');
-  document.getElementById('sec-cmp').scrollIntoView({behavior:'smooth'});
-}
-
-async function runAICompare(key){
-  if(!state.calcResult||!state.payslipData)return;
-  show('ai-loading'); hide('abox');
-  try{
-    let txt;
-    if(state.provider2==='gemini') txt=await geminiCompare(key,state.calcResult,state.payslipData);
-    else                            txt=await claudeCompare(key,state.calcResult,state.payslipData);
-    const box=document.getElementById('abox');
-    box.textContent=txt; box.classList.remove('hidden');
-  }catch(e){
-    const box=document.getElementById('abox');
-    box.textContent='שגיאה בניתוח AI: '+e.message; box.classList.remove('hidden');
-  }finally{hide('ai-loading');}
-}
-
-// ════════════════════════════════════════════
-// SALARY CALCULATION  (client-side, matches Python)
-// ════════════════════════════════════════════
-function calcSalary(){
-  const rate=+document.getElementById('p_rate').value||94.19;
-  const shabRate=+document.getElementById('p_shab').value||278.30;
-  const kon=+document.getElementById('p_kon').value||15;
-  const vac=+document.getElementById('p_vac').value||0;
-
-  let h100s=0,h200s=0,shabV=0;
-  const breakdown=[];
-  SHIFTS.forEach(s=>{
-    const cnt=+document.getElementById('m_'+s.key).value||0;
-    if(cnt<=0)return;
-    const h100=s.h100*cnt, h200=s.h200*cnt, sv=s.shab?cnt:0;
-    h100s+=h100; h200s+=h200; shabV+=sv;
-    breakdown.push({label:s.label,cnt,h100:round2(h100),h200:round2(h200),sv});
-  });
-
-  const vacH=vac*2.25;
-  const totalH100=round2(h100s+kon+vacH);
-  const totalH200=round2(h200s);
-
-  const pay100=round2(totalH100*rate);
-  const pay200=round2(totalH200*rate*2);
-  const payShab=round2(shabV*shabRate);
-  const payKon=round2(kon*rate);
-  const total=round2(pay100+pay200+payShab+payKon);
-
-  state.calcResult={
-    hours_summary:{shift_hours_100:round2(h100s),seniority_hours:kon,vacation_hours:round2(vacH),total_hours_100:totalH100,shift_hours_200:round2(h200s),total_hours_200:totalH200,shabbat_visits:shabV},
-    breakdown,
-    payments:{payment_100:pay100,payment_200:pay200,shabbat_payment:payShab,konenut_payment:payKon,total},
-  };
-
-  renderCalc(state.calcResult);
-  document.getElementById('sec-res').classList.remove('hidden');
-  document.getElementById('sec-cmp').classList.remove('hidden');
-  document.getElementById('sec-res').scrollIntoView({behavior:'smooth'});
-  setStep(3);
-}
-
-function renderCalc(r){
-  const hs=r.hours_summary;
-  document.getElementById('hours-tbody').innerHTML=`
-    <tr><td>ממשמרות (100%)</td><td class="num">${hs.shift_hours_100}</td><td>—</td><td>—</td></tr>
-    <tr><td>כוננות חודשית</td><td class="num">${hs.seniority_hours}</td><td>—</td><td>—</td></tr>
-    <tr><td>ימי חופשה (×2.25)</td><td class="num">${hs.vacation_hours}</td><td>—</td><td>—</td></tr>
-    <tr><td>משמרות שבת/לילה (200%)</td><td>—</td><td class="num">${hs.shift_hours_200}</td><td>—</td></tr>
-    <tr><td>שבת בקרים</td><td>—</td><td>—</td><td class="num">${hs.shabbat_visits}</td></tr>
-    <tr class="tr-tot"><td>סה"כ</td><td class="num">${hs.total_hours_100}</td><td class="num">${hs.total_hours_200}</td><td class="num">${hs.shabbat_visits}</td></tr>`;
-
-  const bt=document.getElementById('break-tbody'); bt.innerHTML='';
-  (r.breakdown||[]).forEach(b=>{
-    bt.innerHTML+=`<tr class="${b.sv?'tr-shab':''}">
-      <td>${b.label}</td><td class="num">${b.cnt}</td>
-      <td class="num">${b.h100>0?b.h100:'—'}</td>
-      <td class="num">${b.h200>0?b.h200:'—'}</td>
-      <td class="num">${b.sv>0?b.sv:'—'}</td>
-    </tr>`;
-  });
-  if(!r.breakdown||!r.breakdown.length)
-    bt.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--gray)">אין משמרות</td></tr>';
-
-  const p=r.payments;
-  document.getElementById('pboxes').innerHTML=`
-    <div class="pbox pb100"><div class="lbl">ש"ג 100%</div><div class="amt num">₪${fmt(p.payment_100)}</div></div>
-    <div class="pbox pb200"><div class="lbl">ש"ג 200%</div><div class="amt num">₪${fmt(p.payment_200)}</div></div>
-    <div class="pbox pbshab"><div class="lbl">שבת בקרים</div><div class="amt num">₪${fmt(p.shabbat_payment)}</div></div>
-    <div class="pbox pbkon"><div class="lbl">כוננות</div><div class="amt num">₪${fmt(p.konenut_payment)}</div></div>
-    <div class="pbox pbtot"><div class="lbl">סה"כ תוספות</div><div class="amt num">₪${fmt(p.total)}</div></div>`;
-}
-
-// Sync parsed counts to manual inputs
-function syncToManual(counts){
-  SHIFTS.forEach(s=>{
-    const el=document.getElementById('m_'+s.key);
-    if(el) el.value=counts[s.key]||0;
-  });
-}
-
-function showParsedPreview(data){
-  const name=data.employee_name?` — ${data.employee_name}`:'';
-  const month=data.month?` (${data.month})`:'';
-  document.getElementById('parsed-sum').textContent=`✅ זוהו ${data.total_shifts||0} משמרות${name}${month}`;
-
-  const tb=document.getElementById('parsed-tbody'); tb.innerHTML='';
-  SHIFTS.forEach(s=>{
-    const cnt=(data.shift_counts||{})[s.key]||0; if(!cnt)return;
-    const h100=(s.h100*cnt).toFixed(2), h200=(s.h200*cnt).toFixed(2), sv=s.shab?cnt:0;
-    tb.innerHTML+=`<tr class="${s.shab?'tr-shab':''}">
-      <td>${s.label}</td><td class="num">${cnt}</td>
-      <td class="num">${h100>0?h100:'—'}</td>
-      <td class="num">${h200>0?h200:'—'}</td>
-      <td class="num">${sv>0?sv:'—'}</td>
-    </tr>`;
-  });
-  document.getElementById('parsed-preview').classList.remove('hidden');
-}
-
-// ════════════════════════════════════════════
-// UTILS
-// ════════════════════════════════════════════
-async function fileToBase64(file){
-  return new Promise((res,rej)=>{
-    const r=new FileReader();
-    r.onload=()=>{
-      const dataUrl=r.result;
-      const b64=dataUrl.split(',')[1];
-      const mimeMap={'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','pdf':'application/pdf'};
-      const ext=file.name.split('.').pop().toLowerCase();
-      res({b64,mime:mimeMap[ext]||'image/jpeg'});
-    };
-    r.onerror=rej;
-    r.readAsDataURL(file);
-  });
-}
-
-function parseJSON(raw){
-  let s=raw.trim();
-  if(s.startsWith('```')){const lines=s.split('\n');s=lines.slice(1,-1).join('\n');}
-  return JSON.parse(s);
-}
-
-function fmt(n){return Number(n||0).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function round2(n){return Math.round(n*100)/100;}
-function show(id){document.getElementById(id).classList.remove('hidden');}
-function hide(id){document.getElementById(id).classList.add('hidden');}
-
-function showErr(id,msg){
-  const el=document.getElementById(id);
-  el.className='alert a-err';
-  el.textContent='❌ '+msg;
-  el.classList.remove('hidden');
-}
-
-function setStep(n){
-  for(let i=1;i<=4;i++){
-    const el=document.getElementById('s'+i);
+// ── Step indicator ─────────────────────────────────────────────────────────
+function setStep(n) {
+  for (let i=1; i<=4; i++) {
+    const el = document.getElementById('stepDot'+i);
     el.classList.remove('active','done');
-    if(i<n) el.classList.add('done');
-    else if(i===n) el.classList.add('active');
+    if (i < n) el.classList.add('done');
+    else if (i === n) el.classList.add('active');
   }
 }
-</script>
 
+// ── Word parsing ───────────────────────────────────────────────────────────
+async function loadWord(file) {
+  if (!file) return;
+  // Reset comparison data when loading a new schedule
+  slip=null; hoursSlip=null;
+  document.getElementById('compareCard').classList.add('hidden');
+  document.getElementById('dzP').classList.remove('done');
+  document.getElementById('dzPsub').textContent='לחץ או גרור';
+  document.getElementById('st2').innerHTML='';
+  const st = document.getElementById('st1');
+  document.getElementById('dbgSection').classList.remove('hidden');
+  document.getElementById('dbgWlog').textContent = '';
+  st.innerHTML = '<div class="info"><span class="loader"></span> קורא סידור עבודה…</div>';
+
+  try {
+    if (!file.name.toLowerCase().endsWith('.docx')) throw new Error('נדרש קובץ .docx בלבד');
+    if (typeof JSZip === 'undefined') throw new Error('ספריית JSZip לא נטענה — בדוק חיבור אינטרנט');
+
+    dbgW(`קובץ: ${file.name} (${(file.size/1024).toFixed(1)} KB)`);
+    const zip = await JSZip.loadAsync(await file.arrayBuffer());
+    const xmlFile = zip.file('word/document.xml');
+    if (!xmlFile) throw new Error('לא נמצא document.xml');
+    const doc = new DOMParser().parseFromString(await xmlFile.async('string'), 'text/xml');
+    if (doc.querySelector('parsererror')) throw new Error('שגיאת XML בקובץ Word');
+
+    const tables = [...doc.getElementsByTagName('w:tbl')];
+    dbgW(`נמצאו ${tables.length} טבלאות`);
+
+    let tableData=null, mC=-1, aC=-1, nC=-1, hRow=-1;
+    for (let t=0; t<tables.length; t++) {
+      const data = [...tables[t].getElementsByTagName('w:tr')].map(r =>
+        [...r.getElementsByTagName('w:tc')].map(c =>
+          [...c.getElementsByTagName('w:t')].map(x => x.textContent).join('').trim()));
+      for (let i=0; i<data.length; i++) {
+        let mc=-1, ac=-1, nc=-1;
+        data[i].forEach((c,j) => {
+          const n = c.replace(/\s/g,'');
+          if (n==='בוקר') mc=j;
+          if (n==='צהריים'||n==='צהרים') ac=j;
+          if (n==='לילה') nc=j;
+        });
+        if (mc>=0 && ac>=0 && nc>=0) {
+          tableData=data; mC=mc; aC=ac; nC=nc; hRow=i;
+          dbgW(`טבלה ${t}: כותרת שורה ${i} | בוקר=${mc} צהריים=${ac} לילה=${nc}`);
+          break;
+        }
+      }
+      if (tableData) break;
+    }
+    if (!tableData) throw new Error('לא נמצאה טבלת סידור עם עמודות בוקר/צהריים/לילה');
+
+    // ── Month detection ──────────────────────────────────────────────────
+    const override = document.getElementById('monthOverride').value;
+    let yr, mo;
+    if (override) {
+      [yr, mo] = override.split('-').map(Number);
+      dbgW(`חודש עקיפה ידנית: ${yr}-${mo}`);
+    } else {
+      // Default = PREVIOUS month (schedules are reviewed after the pay period ends)
+      // e.g. today May 2026 → default April 2026 → period Mar 16–Apr 15
+      const now = new Date();
+      yr = now.getFullYear();
+      mo = now.getMonth(); // 0-based = previous month (1-based)
+      if (mo === 0) { mo = 12; yr--; } // January → December of previous year
+      dbgW(`חודש אוטומטי (חודש קודם): ${yr}-${mo}`);
+    }
+
+    scheduleMonth = `${yr}-${String(mo).padStart(2,'0')}`;
+    const pStart = new Date(yr, mo-2, 16);
+    const pEnd   = new Date(yr, mo-1, 15);
+    const fmt = d => d.toLocaleDateString('he-IL',{day:'numeric',month:'long',year:'numeric'});
+    dbgW(`תקופה: ${fmt(pStart)} עד ${fmt(pEnd)}`);
+
+    document.getElementById('monthDetected').innerHTML =
+      `<strong>📅 תלוש: ${new Date(yr,mo-1,1).toLocaleDateString('he-IL',{month:'long',year:'numeric'})}</strong>
+       <span style="display:block;font-size:11px;margin-top:2px;color:var(--muted)">סידור: ${fmt(pStart)} – ${fmt(pEnd)}</span>`;
+
+    dbgW(`שמות: ${myNames.join(', ')}`);
+
+    // ── Parse shifts ─────────────────────────────────────────────────────
+    shifts = [];
+    for (let i=hRow+1; i<tableData.length; i++) {
+      const row = tableData[i];
+      if (!row[0] || !/^\d{1,2}$/.test(row[0])) continue;
+      const dn = parseInt(row[0]);
+      if (dn<1||dn>31) continue;
+      const d = dn>=16 ? new Date(yr,mo-2,dn) : new Date(yr,mo-1,dn);
+      if (d<pStart||d>pEnd) continue;
+
+      const mine = col => col>=0 && col<row.length && myNames.some(n => row[col].includes(n));
+      const pos = [];
+      if (mine(mC)) pos.push('morning');
+      if (mine(aC)) pos.push('afternoon');
+      if (mine(nC)) pos.push('night');
+
+      let type = null;
+      if (pos.length===2) {
+        if (pos.includes('morning')&&pos.includes('afternoon')) type='double_ma';
+        else if (pos.includes('afternoon')&&pos.includes('night')) type='double_an';
+        else type=pos[0];
+      } else if (pos.length===1) type=pos[0];
+      if (!type) continue;
+
+      shifts.push({date:d, dow:d.getDay(), type, dateStr:fmtDate(d), dayLetter:HDAYS[d.getDay()]});
+      dbgW(`  ${fmtDate(d)} (${HDAYS[d.getDay()]}) — ${type}`);
+    }
+
+    if (!shifts.length) throw new Error('לא נמצאו משמרות. בדוק שהשמות נכונים והסידור לתקופה הנכונה.');
+
+    dbgW(`\n✓ ${shifts.length} משמרות`);
+
+    parsedCounts = {};
+    shifts.forEach(s => parsedCounts[s.type] = (parsedCounts[s.type]||0)+1);
+    editorCounts = {...parsedCounts};
+
+    document.getElementById('dzW').classList.add('done');
+    document.getElementById('dzWsub').textContent = `✓ ${file.name}`;
+
+    buildEditor();
+    calcForecastFromCounts();
+    showAiCard();
+    setStep(2);
+
+    const summary = Object.entries(parsedCounts).map(([k,v])=>`${LABELS[k]}: ${v}`).join(' | ');
+    st.innerHTML = `<div class="ok">✓ נמצאו <strong>${shifts.length}</strong> משמרות: ${summary}</div>`;
+
+  } catch(e) {
+    dbgW(`✗ ${e.message}`);
+    st.innerHTML = `<div class="err">❌ ${e.message}</div>`;
+  }
+}
+
+// ── Shift editor ───────────────────────────────────────────────────────────
+function buildEditor() {
+  const tbody = document.getElementById('editorBody');
+  tbody.innerHTML = '';
+  SHIFT_TYPES_ORDER.forEach(type => {
+    const cnt = parsedCounts[type]||0;
+    const cls = type==='night'?'fri':type.startsWith('double')?'dbl':'';
+    const rh={morning:{h100:'0.5',h200:'—'},afternoon:{h100:'0.5',h200:'—'},night:{h100:'—',h200:'8.5'},double_ma:{h100:'4.33',h200:'—'},double_an:{h100:'—',h200:'13'}}[type]||{h100:'—',h200:'—'};
+    tbody.innerHTML += `<tr class="${cls}">
+      <td>${LABELS[type]}</td><td>${cnt}</td>
+      <td><input type="number" class="qty-input" id="edit_${type}" value="${cnt}" min="0" step="1" onchange="recalcFromEditor()"></td>
+      <td>${rh.h100}</td><td>${rh.h200}</td>
+    </tr>`;
+  });
+  document.getElementById('shiftEditorCard').classList.remove('hidden');
+}
+
+function getEditorCounts() {
+  const c={};
+  SHIFT_TYPES_ORDER.forEach(t => {
+    const el=document.getElementById('edit_'+t);
+    c[t]=el?Math.max(0,parseInt(el.value)||0):0;
+  });
+  return c;
+}
+function recalcFromEditor() { editorCounts=getEditorCounts(); calcForecastFromCounts(); }
+function resetEditor() {
+  editorCounts={...parsedCounts};
+  SHIFT_TYPES_ORDER.forEach(t => { const el=document.getElementById('edit_'+t); if(el) el.value=parsedCounts[t]||0; });
+  calcForecastFromCounts();
+}
+
+function setFormula(mode) {
+  formulaMode = mode;
+  document.querySelectorAll('.formula-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('fBtn-'+mode);
+  if(btn) btn.classList.add('active');
+  calcForecastFromCounts();
+}
+
+// ── Calculation ────────────────────────────────────────────────────────────
+function shiftPay(s) {
+  const f=s.dow===5, sat=s.dow===6;
+  let isFridaySab=false, isSatSab=false;
+  switch(s.type){
+    case 'morning': case 'double_ma': isSatSab=sat; break;
+    case 'afternoon':                 isSatSab=sat; break;
+    case 'night':   case 'double_an': isSatSab=sat; isFridaySab=f; break;
+  }
+  return {
+    isSab: isFridaySab||isSatSab,
+    isFridaySab, isSatSab,
+    shiftUnits:  SHIFT_COUNT_MAP[s.type]||1,
+    morningUnits:IS_MORNING_MAP[s.type]||0,
+    nightUnits:  IS_NIGHT_MAP[s.type]||0,
+  };
+}
+
+function calcForecastFromCounts() {
+  if (formulaMode === 'mekorot') { calcMekorot(); return; }
+  calcPatrick();
+}
+
+function calcMekorot() {
+  let nShifts=0, nMornings=0, nNights=0, fridaySabDays=0, satSabDays=0, satMorningVisits=0;
+  const details=[];
+
+  SHIFT_TYPES_ORDER.forEach(type => {
+    const needed=editorCounts[type]||0;
+    const actual=shifts.filter(s=>s.type===type);
+    let used=0;
+    for(let i=0;i<Math.min(needed,actual.length);i++){
+      const sh=actual[i];
+      const p=shiftPay(sh);
+      nShifts+=p.shiftUnits; nMornings+=p.morningUnits; nNights+=p.nightUnits;
+      if(p.isFridaySab) fridaySabDays++;
+      if(p.isSatSab)    satSabDays++;
+      if(p.isSatSab && p.morningUnits>0) satMorningVisits++;
+      details.push({...sh,...p}); used++;
+    }
+    for(let i=used;i<needed;i++){
+      const syn={dow:0,type,dateStr:'(נוסף)',dayLetter:'—'};
+      const p=shiftPay(syn);
+      nShifts+=p.shiftUnits; nMornings+=p.morningUnits; nNights+=p.nightUnits;
+      details.push({...syn,...p});
+    }
+  });
+
+  // Mekorot: night shifts → code 103 directly; Saturday morning → code 109
+  const tot200 = nNights * HOURS_PER_SHIFT;
+  const sabDays = satMorningVisits;  // only Saturday morning visits = code 109
+
+  const totalHours = actualHoursOverride != null ? actualHoursOverride : nShifts * HOURS_PER_SHIFT;
+  const required   = monthlyStd - nVacationShifts * HOURS_PER_SHIFT;
+  const shabbatHours = satSabDays * 8.5 + fridaySabDays * 5.5;
+
+  // Code 100 bonuses (no shabAdj — that is a Patrick-only concept)
+  const brk_morning  = (nMornings + nNights) * 0.8;
+  const brk_night    = nNights * (3.5 + 1.875);
+  const brk_perShift = (nShifts - nNights) * 0.5;  // 0.5h for non-night shifts
+  const brk_standby  = STANDBY;
+  const brk_vacation = nVacationShifts * 2.25;
+  const shabAdj      = 0;
+
+  const tot100 = brk_morning + brk_night + brk_perShift + brk_standby + brk_vacation;
+  const pay100=tot100*HR, pay200=tot200*HR*2, paySab=sabDays*SAB_RATE, payStandby=STANDBY*HR;
+  const total=pay100+pay200+paySab+payStandby;
+  calc={tot100,tot200,totalHours,required,haPar200:totalHours-required,shabAdj,
+        nShifts,nMornings,nNights,sabDays,fridaySabDays,satSabDays,satMorningVisits,shabbatHours,
+        brk_morning,brk_night,brk_perShift,brk_standby,brk_vacation,
+        pay100,pay200,paySab,payStandby,total,details,formulaMode:'mekorot'};
+  renderForecast();
+  if(slip||hoursSlip) renderCompare();
+}
+
+function calcPatrick() {
+  let nShifts=0, nMornings=0, nNights=0, fridaySabDays=0, satSabDays=0;
+  const details=[];
+
+  SHIFT_TYPES_ORDER.forEach(type => {
+    const needed=editorCounts[type]||0;
+    const actual=shifts.filter(s=>s.type===type);
+    let used=0;
+    for(let i=0;i<Math.min(needed,actual.length);i++){
+      const p=shiftPay(actual[i]);
+      nShifts+=p.shiftUnits; nMornings+=p.morningUnits; nNights+=p.nightUnits;
+      if(p.isFridaySab) fridaySabDays++;
+      if(p.isSatSab)    satSabDays++;
+      details.push({...actual[i],...p}); used++;
+    }
+    for(let i=used;i<needed;i++){
+      const syn={dow:0,type,dateStr:'(נוסף)',dayLetter:'—'};
+      const p=shiftPay(syn);
+      nShifts+=p.shiftUnits; nMornings+=p.morningUnits; nNights+=p.nightUnits;
+      details.push({...syn,...p});
+    }
+  });
+
+  const sabDays = fridaySabDays + satSabDays;
+
+  // Patrick's formula — use actual-hours override when provided
+  const totalHours  = actualHoursOverride != null ? actualHoursOverride : nShifts * HOURS_PER_SHIFT;
+  const required    = monthlyStd - nVacationShifts * HOURS_PER_SHIFT;
+  const haPar200    = totalHours - required;
+  const tot200      = Math.max(0, haPar200);
+
+  // Patrick: C7×8.5 + C8×5.5 (Saturday=8.5h, Friday-night=5.5h)
+  const shabbatHours = satSabDays * 8.5 + fridaySabDays * 5.5;
+  const haPar100     = haPar200 - shabbatHours;
+
+  // Shabbat adjustment — exact translation of Patrick's IF formula
+  let shabAdj;
+  if (haPar200 < 0) {
+    shabAdj = shabbatHours + haPar200;
+  } else if (shabbatHours > haPar200) {
+    shabAdj = -haPar100;                                    // = shabbatHours − haPar200
+  } else {
+    shabAdj = 0.5*haPar100*1.25 + 0.5*haPar100*1.5;
+  }
+
+  const brk_morning  = (nMornings + nNights) * 0.8;
+  const brk_night    = nNights * 3.5 + nNights * 1.875;
+  const brk_perShift = nShifts * 1;
+  const brk_standby  = STANDBY;
+  const brk_vacation = nVacationShifts * 2.25;
+  const tot100 = brk_morning + brk_night + brk_perShift + brk_standby + brk_vacation + shabAdj;
+
+  const pay100=tot100*HR, pay200=tot200*HR*2, paySab=sabDays*SAB_RATE, payStandby=STANDBY*HR;
+  const total=pay100+pay200+paySab+payStandby;
+  calc={tot100,tot200,totalHours,required,haPar200,shabAdj,
+        nShifts,nMornings,nNights,sabDays,fridaySabDays,satSabDays,shabbatHours,
+        brk_morning,brk_night,brk_perShift,brk_standby,brk_vacation,
+        pay100,pay200,paySab,payStandby,total,details,formulaMode:'patrick'};
+  renderForecast();
+  if(slip||hoursSlip) renderCompare();
+}
+
+function renderForecast() {
+  document.getElementById('forecastCard').classList.remove('hidden');
+  const c=calc;
+  const totalShifts=SHIFT_TYPES_ORDER.reduce((s,t)=>s+(editorCounts[t]||0),0);
+  document.getElementById('shiftStats').innerHTML=[
+    ['סה"כ',totalShifts,''],
+    ...SHIFT_TYPES_ORDER.map(t=>[LABELS[t],editorCounts[t]||0,'']),
+    ['שבתות',c.sabDays,'color:var(--danger)'],
+  ].map(([l,n,st])=>`<div class="stat"><div class="n num" style="${st}">${n}</div><div class="l">${l}</div></div>`).join('');
+
+  document.getElementById('totalForecast').textContent=fmtMoney(c.total)+' ₪';
+  const hoursLabel = actualHoursOverride!=null
+    ? `שעות בפועל (ידני): <strong>${c.totalHours.toFixed(1)}שע</strong>`
+    : `${c.nShifts}משמרות × 8.5 = <strong>${c.totalHours.toFixed(1)}שע</strong>`;
+  const formulaLabel = formulaMode==='mekorot'
+    ? '<span style="background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:4px;font-weight:700;font-size:10px">🏢 נוסחת מקורות</span>'
+    : '<span style="background:#fce7f3;color:#9d174d;padding:1px 6px;border-radius:4px;font-weight:700;font-size:10px">📊 נוסחת אקסל</span>';
+  const quotaRow=`<tr><td colspan="4" style="font-size:11px;color:var(--muted);padding:4px 10px;background:#f9fafb">
+    ${formulaLabel} ${hoursLabel} | תקן: <strong>${monthlyStd.toFixed(1)}</strong>
+    ${nVacationShifts>0?`− ${nVacationShifts}×8.5 = <strong>${c.required.toFixed(1)}שע נדרש</strong>`:''} | 200%: <strong>${c.tot200.toFixed(2)}שע</strong>
+  </td></tr>`;
+  document.getElementById('forecastBody').innerHTML=quotaRow+[
+    ['ש"ג 100% (תוספות)', `${c.tot100.toFixed(2)} שע`, `${HR.toFixed(2)} ₪`,      fmtMoney(c.pay100)],
+    ['ש"ג 200% (מכסה)',   `${c.tot200.toFixed(2)} שע`, `${(HR*2).toFixed(2)} ₪`, fmtMoney(c.pay200)],
+    ['שבת בקרים',         `${c.sabDays} ביקורים`,      `${SAB_RATE.toFixed(2)} ₪`,fmtMoney(c.paySab)],
+    ['כוננות',            `${STANDBY} שע`,              `${HR.toFixed(2)} ₪`,      fmtMoney(c.payStandby)],
+    ['סה"כ תוספות','','',fmtMoney(c.total)],
+  ].map(([l,q,r,s],i)=>
+    `<tr ${i===4?'class="total-row"':''}><td>${l}</td><td class="num">${q}</td><td class="num">${r}</td><td><strong class="num">${s} ₪</strong></td></tr>`
+  ).join('');
+
+  document.getElementById('shiftTableBody').innerHTML=c.details.map(d=>{
+    const cls=d.isSatSab?'sat':d.isFridaySab?'fri':d.dow===5?'fri':d.type.startsWith('double')?'dbl':'';
+    const nightMark=d.nightUnits?'🌙':'';
+    const morningMark=d.morningUnits&&!d.nightUnits?'☀':'';
+    return `<tr class="${cls}"><td class="num">${d.dateStr}</td><td>${d.dayLetter}</td>
+      <td>${LABELS[d.type]} ${nightMark}${morningMark}</td>
+      <td class="num">${(d.shiftUnits*HOURS_PER_SHIFT).toFixed(1)}</td>
+      <td>${d.isSab?'✓':''}</td></tr>`;
+  }).join('');
+
+  // Breakdown of tot100 components
+  const brkRows=[
+    ['תוספת 20% בוקר+לילה (4ש׳)',c.brk_morning],
+    ['תוספת לילה (3.5+1.875ש׳)',  c.brk_night],
+    ['שעה לכל משמרת',             c.brk_perShift],
+    ['כוננות',                    c.brk_standby],
+    ['תוספת ימי חופש',            c.brk_vacation],
+    ['הפרש שבת',                  c.shabAdj],
+  ];
+  const brkEl=document.getElementById('tot100Breakdown');
+  if(brkEl){
+    brkEl.innerHTML=brkRows.map(([l,v])=>`
+      <div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid #f0f0f0">
+        <span style="color:#6b7280">${l}</span>
+        <span class="num" style="font-weight:600;color:${v<0?'var(--success)':v>0?'var(--text)':'var(--muted)'}">${v.toFixed(2)} שע</span>
+      </div>`).join('')+
+      `<div style="display:flex;justify-content:space-between;padding:4px 0;margin-top:4px;font-weight:700;border-top:2px solid var(--border)">
+        <span>סה"כ ש"ג 100%</span><span class="num">${c.tot100.toFixed(2)} שע</span></div>`+
+      (c.haPar200<0?`<div style="margin-top:6px;font-size:11px;color:#92400e;background:#fffbeb;padding:5px 8px;border-radius:5px">
+        ⚠️ <strong>הפרש שבת גבוה:</strong> שעות שנרשמו בסידור (${c.totalHours.toFixed(1)}) קטנות מהתקן (${monthlyStd.toFixed(1)}).
+        הזן <strong>משמרות היעדרות</strong> או <strong>שעות בפועל</strong> לדיוק.
+      </div>`:'');
+  }
+}
+
+// ── PDF Payslip ────────────────────────────────────────────────────────────
+async function extractPDFText(file) {
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+  let txt='';
+  for(let p=1;p<=pdf.numPages;p++){
+    const pg=await pdf.getPage(p);
+    const tc=await pg.getTextContent();
+    const lines={};
+    tc.items.forEach(it=>{
+      const y=Math.round(it.transform[5]);
+      if(!lines[y]) lines[y]=[];
+      lines[y].push({x:it.transform[4],t:it.str});
+    });
+    Object.keys(lines).map(Number).sort((a,b)=>b-a).forEach(y=>{
+      const line=lines[y].sort((a,b)=>b.x-a.x).map(i=>i.t).join(' ').trim();
+      if(line) txt+=line+'\n';
+    });
+    txt+='\n';
+  }
+  return txt;
+}
+
+function extractCodeRow(text,code){
+  const re=new RegExp(`(?:^|\\s)${code}(?:\\s|$)`);
+  for(const line of text.split('\n')){
+    const t=line.trim();
+    if(!re.test(t)) continue;
+    const nums=[...t.matchAll(/(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)/g)]
+      .map(m=>parseFloat(m[0].replace(/,/g,''))).filter(n=>!isNaN(n)&&n!==parseInt(code));
+    if(nums.length){
+      dbgP(`  קוד ${code}: "${t.slice(0,60)}" → [${nums.join(',')}]`);
+      return nums;
+    }
+  }
+  return null;
+}
+
+function findAmountNearCode(text,code){
+  const row=extractCodeRow(text,code);
+  if(row&&row.length) return Math.max(...row.filter(n=>n>10));
+  // fallback: check next line
+  const lines=text.split('\n');
+  for(let i=0;i<lines.length-1;i++){
+    if(new RegExp(`(?:^|\\s)${code}(?:\\s|$)`).test(lines[i])){
+      const nums=[...lines[i+1].matchAll(/(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)/g)]
+        .map(m=>parseFloat(m[0].replace(/,/g,''))).filter(n=>n>10);
+      if(nums.length){dbgP(`  קוד ${code} (שורה הבאה): ${nums[0]}`);return Math.max(...nums);}
+    }
+  }
+  return null;
+}
+
+function findHoursNearCode(text,code){
+  const row=extractCodeRow(text,code);
+  if(!row) return null;
+  const hrs=row.filter(n=>n>0&&n<50&&n!==parseInt(code));
+  return hrs.length?hrs[0]:null;
+}
+
+function _extractSummaryAmt(text, re){
+  const lines=text.split('\n');
+  for(let i=0;i<lines.length;i++){
+    if(re.test(lines[i])){
+      const ctx=[lines[i-1]||'',lines[i],lines[i+1]||''].join(' ');
+      const nums=[...ctx.matchAll(/([\d]{1,3}(?:,\d{3})*\.\d{2})/g)]
+        .map(m=>parseFloat(m[0].replace(/,/g,''))).filter(n=>n>1000);
+      if(nums.length) return Math.max(...nums);
+    }
+  }
+  return null;
+}
+
+function parsePayslip(text){
+  dbgP('=== ניתוח תלוש ===');
+  dbgP(`אורך: ${text.length} תווים`);
+  const s={ot100h:null,ot100p:null,ot200h:null,ot200p:null,sabD:null,sabP:null,stbyP:null,netPay:null,grossPay:null};
+  s.ot100p=findAmountNearCode(text,'100'); s.ot100h=findHoursNearCode(text,'100');
+  dbgP(`100: שע=${s.ot100h} סכום=${s.ot100p}`);
+  s.ot200p=findAmountNearCode(text,'103'); s.ot200h=findHoursNearCode(text,'103');
+  dbgP(`103: שע=${s.ot200h} סכום=${s.ot200p}`);
+  s.sabP=findAmountNearCode(text,'109');   s.sabD=findHoursNearCode(text,'109');
+  dbgP(`109: ימים=${s.sabD} סכום=${s.sabP}`);
+  s.stbyP=findAmountNearCode(text,'110');
+  dbgP(`110: סכום=${s.stbyP}`);
+  s.netPay  = _extractSummaryAmt(text, /נטו.{0,5}לתשלום/);
+  s.grossPay= _extractSummaryAmt(text, /סך.{0,8}תשלומים|כל.התשלומים|תשלומים\s+ס"כ|תשלומים\s+כ"ס/);
+  dbgP(`נטו לתשלום: ${s.netPay} | גולמי: ${s.grossPay}`);
+  return s;
+}
+
+// ── גיליון נוכחות parser ──────────────────────────────────────────────────
+function parseHoursAnalysis(text){
+  if(!/נוכחות\s*לחודש|גיליון\s*נוכח|עיבוד\s*נוכח/.test(text)) return null;
+
+  const findN=(...pats)=>{
+    for(const p of pats){const m=text.match(new RegExp(p));if(m){const n=parseFloat(m[1]);if(!isNaN(n))return n;}}
+    return null;
+  };
+  const hrs100=findN('שנ\\s*100%\\s+([\\d.]+)','([\\d.]+)\\s+שנ\\s*100%');
+  const hrs200=findN('שנ\\s*200%\\s+([\\d.]+)','([\\d.]+)\\s+שנ\\s*200%');
+  const sabCnt=findN('שבתות\\s+([\\d.]+)','([\\d.]+)\\s+שבתות(?!\\s*\\d)');
+  const stbyH =findN('כונ\\s*100%\\s+([\\d.]+)','([\\d.]+)\\s+כונ\\s*100%');
+
+  if(hrs100==null&&hrs200==null) return null;
+  dbgP(`גיליון נוכחות: שנ100%=${hrs100} שנ200%=${hrs200} שבתות=${sabCnt} כוננות=${stbyH}`);
+
+  return {
+    isHoursAnalysis:true,
+    ot100h:hrs100, ot100p:hrs100!=null?hrs100*HR:null,
+    ot200h:hrs200, ot200p:hrs200!=null?hrs200*HR*2:null,
+    sabD:sabCnt,   sabP:sabCnt!=null?sabCnt*SAB_RATE:null,
+    stbyP:stbyH!=null?stbyH*HR:null,
+    netPay:null, grossPay:null,
+  };
+}
+
+function extractPayslipMonth(text, filename=''){
+  const heM=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+  // 1. Filename is most reliable — check it first
+  if(filename){
+    const fn=filename.toLowerCase();
+    // Patterns: 2026-03, 03-2026, 2026_03, 03_2026, 202603
+    const fp=fn.match(/(\d{4})[-_](\d{2})|(\d{2})[-_](\d{4})/);
+    if(fp){
+      const yr=fp[1]||fp[4], mo=fp[2]||fp[3];
+      const mn=parseInt(mo);
+      if(mn>=1&&mn<=12) return `${yr}-${String(mn).padStart(2,'0')}`;
+    }
+    for(let i=0;i<heM.length;i++){
+      if(fn.includes(heM[i])){const ym=fn.match(/20\d{2}/);if(ym)return `${ym[0]}-${String(i+1).padStart(2,'0')}`;}
+    }
+  }
+
+  // 2. Content — collect ALL candidate months and return the most frequent
+  const votes={};
+  const add=ym=>{votes[ym]=(votes[ym]||0)+1;};
+
+  let m;
+  const sp=/(\d{2})\s*[\/\-]\s*(\d{2})/g;
+  while((m=sp.exec(text))!==null){
+    const a=parseInt(m[1]),b=parseInt(m[2]);
+    if(b>=24&&b<=35&&a>=1&&a<=12) add(`20${b}-${String(a).padStart(2,'0')}`);
+    if(a>=24&&a<=35&&b>=1&&b<=12) add(`20${a}-${String(b).padStart(2,'0')}`);
+  }
+  for(let i=0;i<heM.length;i++){
+    const r=text.match(new RegExp(heM[i]+'\\s*(\\d{4})'));
+    if(r) add(`${r[1]}-${String(i+1).padStart(2,'0')}`);
+  }
+  const iso=/20(\d{2})[\/\-](\d{2})/g;
+  while((m=iso.exec(text))!==null){const mn=parseInt(m[2]);if(mn>=1&&mn<=12)add(`20${m[1]}-${String(mn).padStart(2,'0')}`);}
+
+  if(!Object.keys(votes).length) return null;
+  // Return most frequent
+  return Object.entries(votes).sort((a,b)=>b[1]-a[1])[0][0];
+}
+
+async function loadPayslip(file){
+  if(!file) return;
+  const st=document.getElementById('st2');
+  if(!calc){st.innerHTML='<div class="warn">⚠️ יש לטעון קודם סידור עבודה בשלב 1.</div>';return;}
+  document.getElementById('dbgPlog').textContent='';
+  st.innerHTML='<div class="info"><span class="loader"></span> מנתח תלוש…</div>';
+  try{
+    const txt=await extractPDFText(file);
+    dbgP(`טקסט: ${txt.length} תווים`);
+
+    // Auto-detect גיליון נוכחות → stored separately in hoursSlip
+    const hoursData=parseHoursAnalysis(txt);
+    if(hoursData){
+      hoursSlip=hoursData;
+      document.getElementById('dzP').classList.add('done');
+      document.getElementById('dzPsub').textContent=`✓ גיליון נוכחות`;
+      document.getElementById('dbgPayslip').style.display='';
+      const found=[hoursSlip.ot100p,hoursSlip.ot200p,hoursSlip.sabP,hoursSlip.stbyP].filter(v=>v!=null).length;
+      st.innerHTML=`<div class="ok">✓ גיליון נוכחות — <strong>${found}/4</strong> רכיבים. ממתין לתלוש לצורך השוואה מדויקת.</div>`;
+      if(calc){renderCompare();document.getElementById('compareCard').classList.remove('hidden');setStep(4);}
+      return;
+    }
+
+    const slipMonth=extractPayslipMonth(txt, file.name);
+    dbgP(`חודש תלוש: ${slipMonth||'לא זוהה'} | חודש סידור: ${scheduleMonth} | שם קובץ: ${file.name}`);
+
+    if(slipMonth&&scheduleMonth&&slipMonth!==scheduleMonth){
+      const fmtYM=ym=>{const[y,m]=ym.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString('he-IL',{month:'long',year:'numeric'});};
+      st.innerHTML=`<div class="err">❌ <strong>אי-התאמת חודשים</strong><br>
+        סידור: <strong>${fmtYM(scheduleMonth)}</strong> &nbsp;|&nbsp; תלוש: <strong>${fmtYM(slipMonth)}</strong><br>
+        <span style="font-size:12px">העלה תלוש של ${fmtYM(scheduleMonth)} — או השתמש בשדה "עקיפה ידנית" לשינוי החודש.</span>
+      </div>`;
+      return;
+    }
+
+    slip=parsePayslip(txt);
+    document.getElementById('dzP').classList.add('done');
+    document.getElementById('dzPsub').textContent=`✓ ${file.name}`;
+    document.getElementById('dbgPayslip').style.display='';
+    const found=[slip.ot100p,slip.ot200p,slip.sabP,slip.stbyP].filter(v=>v!=null).length;
+    st.innerHTML=`<div class="ok">✓ תלוש נותח — נמצאו <strong>${found}/4</strong> רכיבים עיקריים.</div>`;
+    renderCompare();
+    document.getElementById('compareCard').classList.remove('hidden');
+    setStep(4);
+  }catch(e){
+    dbgP(`שגיאה: ${e.message}`);
+    st.innerHTML=`<div class="err">❌ ${e.message}</div>`;
+  }
+}
+
+// ── Comparison ─────────────────────────────────────────────────────────────
+function renderCompare(){
+  if(!calc) return;
+  const hasHA=hoursSlip!=null, hasSlip=slip!=null;
+  if(!hasHA&&!hasSlip) return;
+  document.getElementById('compareCard').classList.remove('hidden');
+  const c=calc;
+
+  // ── Mode: ha_vs_slip (both loaded) | schedule_vs_ha | schedule_vs_slip ──
+  const mode=hasHA&&hasSlip?'ha_vs_slip':hasHA?'schedule_vs_ha':'schedule_vs_slip';
+  const s=mode==='ha_vs_slip'?slip:(hasHA?hoursSlip:slip);
+  const h=hoursSlip; // shorthand
+
+  // Left-side values depend on mode
+  const fc100h=mode==='ha_vs_slip'?h.ot100h:c.tot100;
+  const fc100p=mode==='ha_vs_slip'?h.ot100p:c.pay100;
+  const fc200h=mode==='ha_vs_slip'?h.ot200h:c.tot200;
+  const fc200p=mode==='ha_vs_slip'?h.ot200p:c.pay200;
+  const fcSabD=mode==='ha_vs_slip'?h.sabD   :c.sabDays;
+  const fcSabP=mode==='ha_vs_slip'?h.sabP   :c.paySab;
+  const fcStby=mode==='ha_vs_slip'?h.stbyP  :c.payStandby;
+  const fcTotal=mode==='ha_vs_slip'
+    ?[h.ot100p,h.ot200p,h.sabP,h.stbyP].filter(v=>v!=null).reduce((a,b)=>a+b,0)
+    :c.total;
+  const haVsSlipTotalSl=mode==='ha_vs_slip'
+    ?[s.ot100p,s.ot200p,s.sabP,s.stbyP].filter(v=>v!=null).reduce((a,b)=>a+b,0)
+    :null;
+  const tol=v=>mode==='ha_vs_slip'?v*0.05:v; // tight tolerances when comparing actual vs paid
+
+  // In schedule_vs_slip: Patrick's formula distributes 100%/200% differently from payslip codes.
+  // Show combined overtime instead of per-code (to avoid misleading inverse-looking gap).
+  const rows= mode==='schedule_vs_slip' ? [
+    {l:'שעות נוספות — סכום כולל (100%+200%)',
+      fc: c.pay100+c.pay200,
+      sl: s.ot100p!=null||s.ot200p!=null ? (s.ot100p||0)+(s.ot200p||0) : null,
+      tol:400, unit:'₪'},
+    {l:'ש"ג 200% — שעות (לעיון)',
+      fc:c.tot200, sl:s.ot200h, tol:9999, unit:'שע', infoOnly:true},
+    {l:'שבת בקרים — ימים', fc:c.sabDays, sl:s.sabD, tol:0.5, unit:''},
+    {l:'שבת בקרים — סכום', fc:c.paySab,  sl:s.sabP, tol:50,  unit:'₪'},
+    {l:'כוננות — סכום',    fc:c.payStandby, sl:s.stbyP, tol:5, unit:'₪'},
+    {l:'סה"כ תוספות',      fc:c.total,  sl:null, tol:0, unit:'₪'},
+  ] : [
+    {l:'ש"ג 100% — שעות', fc:fc100h,  sl:s.ot100h, tol:mode==='ha_vs_slip'?0.05:1.5, unit:'שע'},
+    {l:'ש"ג 100% — סכום', fc:fc100p,  sl:s.ot100p, tol:mode==='ha_vs_slip'?5:150,    unit:'₪' },
+    {l:'ש"ג 200% — שעות', fc:fc200h,  sl:s.ot200h, tol:mode==='ha_vs_slip'?0.05:1.5, unit:'שע'},
+    {l:'ש"ג 200% — סכום', fc:fc200p,  sl:s.ot200p, tol:mode==='ha_vs_slip'?5:200,    unit:'₪' },
+    {l:'שבת בקרים — ימים',fc:fcSabD,  sl:s.sabD,   tol:mode==='ha_vs_slip'?0.01:0.5, unit:''  },
+    {l:'שבת בקרים — סכום',fc:fcSabP,  sl:s.sabP,   tol:mode==='ha_vs_slip'?5:50,     unit:'₪' },
+    {l:'כוננות — סכום',   fc:fcStby,  sl:s.stbyP,  tol:5,                             unit:'₪' },
+    {l:'סה"כ תוספות',     fc:fcTotal, sl:haVsSlipTotalSl,tol:mode==='ha_vs_slip'?10:0,unit:'₪'},
+  ];
+
+  let html=''; const mismatches=[],missing=[]; let moneyDiff=0;
+  const schedMode=mode==='schedule_vs_slip';
+  // In schedule_vs_slip: add a note header row explaining the methodology
+  if(schedMode){
+    html+=`<tr><td colspan="5" style="background:#fffbeb;padding:7px 12px;font-size:12px;color:#92400e;border-bottom:1px solid #fde68a">
+      💡 <strong>נוסחת אקסל:</strong> חלוקת 100%/200% שונה מהתלוש — "שעות נוספות כולל" היא ההשוואה הנכונה. לפירוט פר-קוד, טען גיליון נוכחות.
+    </td></tr>`;
+  }
+  rows.forEach((r,idx)=>{
+    const has=r.sl!=null, fc=r.fc, sl=has?r.sl:null;
+    const diff=has?fc-sl:null, match=has&&Math.abs(diff)<r.tol, isLast=idx===rows.length-1;
+    if(has&&!match&&r.unit==='₪'&&!r.infoOnly) moneyDiff+=diff;
+    const fv=(v,u)=>v==null?'—':(u==='₪'?fmtMoney(v)+' ₪':v+(u?' '+u:''));
+    const ds=diff==null?'—':match?'✓':`${diff>0?'-':'+'}${fmtMoney(Math.abs(diff))} ${r.unit}`;
+    const badge=r.infoOnly?'<span class="pill" style="background:#e5e7eb;color:#6b7280;font-size:10px">לעיון</span>':
+      !has?'<span class="pill y">לא נמצא</span>':match?'<span class="pill g">✓ תקין</span>':
+      schedMode?'<span class="pill y" title="השוואה בין סידור לתלוש — הפרש צפוי">📋 ביצוע</span>':
+      '<span class="pill r">⚠ פער</span>';
+    const cls=isLast?'total-row':r.infoOnly?'':!has?'':match?'match':schedMode?'':'mismatch';
+    const rowStyle=r.infoOnly?'style="opacity:0.55"':'';
+    html+=`<tr class="${cls}" ${rowStyle}><td>${r.l}</td>
+      <td class="num">${fv(fc,r.unit)}</td>
+      <td class="num">${has?fv(sl,r.unit):'<span style="color:var(--muted)">לא נמצא</span>'}</td>
+      <td class="num" style="${!r.infoOnly&&diff<0?'color:var(--success)':!r.infoOnly&&diff>0?'color:var(--danger)':''}">${r.infoOnly?'—':ds}</td>
+      <td>${badge}</td></tr>`;
+    if(!r.infoOnly){
+      if(!has) missing.push(r.l);
+      else if(!match) mismatches.push({...r,diff,sl});
+    }
+  });
+  document.getElementById('compareBody').innerHTML=html;
+
+  // ── Update headings ────────────────────────────────────────────────────
+  const titles={ha_vs_slip:'📊 השוואה: גיליון נוכחות מול תלוש',schedule_vs_ha:'📊 השוואה: סידור מול גיליון נוכחות',schedule_vs_slip:'📊 השוואה: תחזית מול תלוש'};
+  const col1={ha_vs_slip:'גיליון נוכחות',schedule_vs_ha:'תחזית',schedule_vs_slip:'תחזית'};
+  const col2={ha_vs_slip:'תלוש שכר',schedule_vs_ha:'גיליון נוכחות',schedule_vs_slip:'מהתלוש'};
+  document.getElementById('compareCard').querySelector('h2').textContent=titles[mode];
+  const ths=document.getElementById('compareCard').querySelectorAll('th');
+  ths[1].textContent=col1[mode]; ths[2].textContent=col2[mode];
+
+  // ── Side-by-side total boxes ───────────────────────────────────────────
+  const slipParts=[s.ot100p,s.ot200p,s.sabP,s.stbyP].filter(v=>v!=null);
+  const slipTotal=slipParts.reduce((a,b)=>a+b,0);
+  const slipFound=slipParts.length;
+
+  let leftBox='', rightBox='', refRow='';
+  if(mode==='ha_vs_slip'){
+    leftBox=`<div class="total-box" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)">
+      <div class="lbl">🕐 חישוב מגיליון נוכחות</div>
+      <div class="amount num">${fmtMoney(fcTotal)} ₪</div>
+      <div class="sub">שעות בפועל × תעריף</div></div>`;
+    rightBox=`<div class="total-box" style="background:linear-gradient(135deg,#0891b2,#0e7490)">
+      <div class="lbl">📊 תוספות שולמו בתלוש</div>
+      <div class="amount num">${slipFound?fmtMoney(slipTotal)+' ₪':'—'}</div>
+      <div class="sub">קודים 100 · 103 · 109 · 110 &nbsp;(${slipFound}/4 זוהו)</div></div>`;
+    refRow=`<div style="background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:8px 14px;margin-bottom:10px;font-size:12px;color:var(--muted)">
+      💡 תחזית מהסידור לעיון בלבד: <strong class="num" style="color:var(--text)">${fmtMoney(c.total)} ₪</strong>
+      <span style="margin-right:10px">(כוללת משמרות שלא עובדו — לא רלוונטית לבדיקת שכר)</span></div>`;
+  } else {
+    leftBox=`<div class="total-box">
+      <div class="lbl">💰 תחזית מהסידור</div>
+      <div class="amount num">${fmtMoney(c.total)} ₪</div>
+      <div class="sub">לפי הסידור והנוסחה</div></div>`;
+    const isSchedHA=mode==='schedule_vs_ha';
+    rightBox=`<div class="total-box" style="background:linear-gradient(135deg,${isSchedHA?'#7c3aed,#5b21b6':'#0891b2,#0e7490'})">
+      <div class="lbl">${isSchedHA?'🕐 חישוב מגיליון נוכחות':'📊 תוספות משמרות בתלוש'}</div>
+      <div class="amount num">${slipFound?fmtMoney(slipTotal)+' ₪':'—'}</div>
+      <div class="sub">${isSchedHA?`שעות בפועל · ${slipFound}/4 רכיבים`:`קודים 100 · 103 · 109 · 110 &nbsp;(${slipFound}/4 זוהו)`}</div></div>`;
+  }
+  const slipRef=s.grossPay||s.netPay?`<div style="background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:12px;font-size:13px;display:flex;gap:24px;flex-wrap:wrap;align-items:center">
+    <span style="color:var(--muted);font-weight:600">📋 ריכוז התלוש:</span>
+    ${s.grossPay?`<span>סך תשלומים גולמי: <strong class="num">${fmtMoney(s.grossPay)} ₪</strong></span>`:''}
+    ${s.netPay?`<span>נטו לתשלום: <strong class="num" style="color:var(--success)">${fmtMoney(s.netPay)} ₪</strong></span>`:''}
+  </div>`:'';
+
+  const mm=mismatches.filter(m=>m.unit==='₪');
+  let sum='';
+  if(mm.length>0){
+    const sp=moneyDiff>0, ad=Math.abs(moneyDiff);
+    const pctGap=slipFound&&slipTotal>0?ad/(mode==='ha_vs_slip'?fcTotal:c.total)*100:0;
+    // In schedule_vs_slip mode, a large gap (>15%) is almost always due to unworked planned shifts
+    // — not a payroll error. Show an informational box instead of an alarming red one.
+    if(mode==='schedule_vs_slip'&&pctGap>15){
+      sum=`<div class="warn" style="font-size:13px">
+        ℹ️ <strong>פער תכנוני — לא בהכרח תקלת שכר</strong><br>
+        הסידור כולל משמרות שלא עובדו בפועל (ימי מנוחה, חופשות, מחלה). פער של ${fmtMoney(ad)} ₪ (${pctGap.toFixed(0)}%) בין הסידור לתלוש הוא צפוי ונורמלי.<br>
+        <strong>לבדיקה מדויקת אם שכרך חושב נכון</strong> — טען את גיליון הנוכחות. הכלי יעבור אוטומטית לבדיקת "ביצוע מול תלוש".<br>
+        <button class="sml" style="margin-top:8px;background:#d97706" onclick="document.getElementById('fiP').click()">📂 טען גיליון נוכחות לבדיקה</button>
+      </div>`;
+    } else {
+      const bg=sp?'linear-gradient(135deg,#dc2626,#b91c1c)':'linear-gradient(135deg,#15803d,#065f2e)';
+      sum=`<div class="diff-box" style="background:${bg};color:#fff">
+        <div><div class="dlbl">${sp?'⚠️':'✅'} סה"כ פער כספי</div>
+        <div class="dtitle">${sp?'שולם פחות מהמגיע':'שולם יותר מהמגיע'}</div></div>
+        <div class="damount num">${sp?'-':'+'}${fmtMoney(ad)} ₪</div></div>`;
+    }
+  } else if(!mismatches.length&&!missing.length){
+    const okMsg=mode==='ha_vs_slip'?'✅ <strong>שכרך חושב נכון!</strong> התשלום תואם את שעות הנוכחות בדיוק.':'✅ <strong>הכל תואם!</strong> התחזית תואמת את הנתונים.';
+    sum=`<div class="ok" style="font-size:14px">${okMsg}</div>`;
+  }
+  document.getElementById('diffSummary').innerHTML=`<div class="grid2" style="margin-bottom:10px">${leftBox}${rightBox}</div>${refRow}${slipRef}${sum}`;
+
+  let analysis='';
+  if(!mismatches.length&&!missing.length){
+    analysis=`<span style="color:var(--success);font-weight:700">${mode==='ha_vs_slip'?'✅ שכרך חושב נכון לפי גיליון הנוכחות — אין פערים.':'✅ לא נמצאו פערים.'}</span>`;
+  } else {
+    if(mode!=='ha_vs_slip'){
+      const pctDiff=slipFound&&slipTotal>0?Math.abs(c.total-slipTotal)/c.total*100:0;
+      if(pctDiff>15){
+        analysis+=`<div class="info" style="margin-bottom:10px;font-size:13px">ℹ️ <strong>פער גדול בין הסידור לנוכחות</strong> — הסידור כולל משמרות שלא עובדו בפועל (ימי מנוחה, חופשות, מחלה). זהו פער תכנוני, לא תקלת שכר. לבדיקה מדויקת — טען גם גיליון נוכחות.</div>`;
+      }
+    }
+    if(missing.length) analysis+=`<div class="warn" style="margin-bottom:8px">⚠️ <strong>${missing.length} רכיבים לא זוהו</strong> — ייתכן שהתלוש משתמש בקודים שונים. בדוק ידנית.</div>`;
+    if(mismatches.length){
+      analysis+='<strong>פירוט הפערים:</strong><ul style="margin:8px 0;padding-right:18px;line-height:1.9">';
+      mismatches.forEach(m=>{
+        const dir=m.diff>0?'פחות מהמגיע':'יותר מהמגיע';
+        const reason=mode==='ha_vs_slip'
+          ?(m.l.includes('100%')?'שעות 100% בגיליון הנוכחות שונות מקוד 100 בתלוש — בדוק ידנית.':
+            m.l.includes('200%')?'שעות 200% בגיליון הנוכחות שונות מקוד 103 בתלוש — ייתכן טעות חישוב.':
+            m.l.includes('שבת')?'מספר שבתות בגיליון שונה מקוד 109 בתלוש.':
+            m.l.includes('כוננות')?'שעות כוננות שונות — בדוק קוד 110.':'בדוק ידנית.')
+          :(m.l.includes('100%')&&m.unit==='שע'?'בדוק היעדרויות שלא נרשמו בסידור.':
+            m.l.includes('200%')&&m.unit==='שע'?'בדוק ספירת משמרות שבת/לילה.':
+            m.l.includes('שבת')?'בדוק ספירת שבתות בקרים.':
+            m.l.includes('כוננות')?'בדוק שעות כוננות (15 שע ברירת מחדל).':'בדוק את התלוש המקורי.');
+        analysis+=`<li><strong>${m.l}:</strong> ${dir} ב-${fmtMoney(Math.abs(m.diff))} ₪. ${reason}</li>`;
+      });
+      analysis+='</ul>';
+    }
+  }
+  document.getElementById('analysis').innerHTML=analysis;
+
+  // Show AI card
+  showAiCard();
+
+  // Auto-save to learning system
+  if(scheduleMonth&&slipFound>0){
+    const status=mm.length>0?'פער':(!mismatches.length&&!missing.length?'תקין':'נתונים חסרים');
+    _saveMonthResult(scheduleMonth, fcTotal, slipTotal, moneyDiff, status, mode==='ha_vs_slip'||mode==='schedule_vs_ha');
+  }
+}
+
+// ── Utils ──────────────────────────────────────────────────────────────────
+function fmtDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function fmtMoney(n){if(n==null||isNaN(n))return '—';return Math.abs(n).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+// ── AI Analysis ──────────────────────────────────────────────────────────────
+const AI_PROVIDERS = {
+  claude: {
+    name:'Claude', company:'Anthropic',
+    runLabel:'נתח עם Claude', icon:'🟣',
+    placeholder:'sk-ant-api03-...',
+    keyLabel:'מפתח API — Claude (Anthropic)',
+    keyLink:'https://console.anthropic.com/',
+  },
+  gemini: {
+    name:'Gemini', company:'Google',
+    runLabel:'נתח עם Gemini', icon:'🔵',
+    placeholder:'AIzaSy...',
+    keyLabel:'מפתח API — Gemini (Google AI Studio)',
+    keyLink:'https://aistudio.google.com/apikey',
+  },
+};
+
+let aiProvider = localStorage.getItem('ai-provider') || 'claude';
+let aiKeys     = JSON.parse(localStorage.getItem('ai-keys') || '{}');
+// keep backward-compat with old single-key storage
+if(!aiKeys.claude && localStorage.getItem('ai-api-key'))
+  aiKeys.claude = localStorage.getItem('ai-api-key');
+let aiApiKey   = aiKeys[aiProvider] || '';
+
+function showAiCard() {
+  const card = document.getElementById('aiCard');
+  if(card) card.classList.remove('hidden');
+  selectAiProvider(aiProvider, false); // restore saved provider without recalc
+}
+
+function selectAiProvider(prov, recalc=false) {
+  aiProvider = prov;
+  localStorage.setItem('ai-provider', prov);
+  aiApiKey = aiKeys[prov] || '';
+
+  // Update card highlights
+  document.querySelectorAll('.ai-prov-card').forEach(c => c.classList.remove('active'));
+  const pc = document.getElementById('prov-'+prov);
+  if(pc) pc.classList.add('active');
+
+  // Update key input
+  const inp = document.getElementById('aiKeyInput');
+  if(inp) { inp.value = aiApiKey; inp.placeholder = AI_PROVIDERS[prov]?.placeholder || ''; }
+
+  // Update labels
+  const lbl = document.getElementById('aiKeyLabel');
+  if(lbl) lbl.textContent = AI_PROVIDERS[prov]?.keyLabel || '';
+  const link = document.getElementById('aiKeyLink');
+  if(link) link.href = AI_PROVIDERS[prov]?.keyLink || '#';
+  const runLbl = document.getElementById('aiRunLabel');
+  if(runLbl) runLbl.textContent = AI_PROVIDERS[prov]?.runLabel || 'נתח עם AI';
+
+  // Update status dots
+  Object.keys(AI_PROVIDERS).forEach(p => {
+    const dot = document.getElementById('status-'+p);
+    if(!dot) return;
+    const hasKey = !!(aiKeys[p]||'').trim();
+    dot.textContent = hasKey ? '✓' : '○';
+    dot.className = 'ai-prov-status ' + (hasKey ? 'ok' : 'empty');
+  });
+
+  // Update run button
+  const btn = document.getElementById('aiRunBtn');
+  if(btn) btn.disabled = !aiApiKey.trim();
+}
+
+function onAiKeyInput(val) {
+  aiApiKey = val;
+  aiKeys[aiProvider] = val;
+  localStorage.setItem('ai-keys', JSON.stringify(aiKeys));
+  localStorage.setItem('ai-api-key', val); // compat
+  const btn = document.getElementById('aiRunBtn');
+  if(btn) btn.disabled = !val.trim();
+  // Update status dot
+  const dot = document.getElementById('status-'+aiProvider);
+  if(dot) { dot.textContent = val.trim()?'✓':'○'; dot.className='ai-prov-status '+(val.trim()?'ok':'empty'); }
+}
+
+function toggleKeyVisibility() {
+  const inp = document.getElementById('aiKeyInput');
+  if(!inp) return;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  const btn = document.getElementById('toggleKeyBtn');
+  if(btn) btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+function updateAiBtn() {
+  onAiKeyInput(document.getElementById('aiKeyInput')?.value || '');
+}
+
+// Build analysis context from current state
+function buildAnalysisContext() {
+  const c = calc;
+  const s = slip;
+  if(!c) return null;
+  let ctx = `=== ניתוח תלוש שכר — בקרי מקורות דרום ===\n\n`;
+  ctx += `נוסחה בשימוש: ${formulaMode === 'mekorot' ? 'נוסחת מקורות' : 'נוסחת אקסל'}\n`;
+  ctx += `שעות תקן חודשי: ${monthlyStd}\n`;
+  ctx += `משמרות היעדרות: ${nVacationShifts}\n\n`;
+  ctx += `=== תחזית מחושבת ===\n`;
+  ctx += `סה"כ משמרות: ${c.nShifts}\n`;
+  ctx += `משמרות לילה: ${c.nNights}\n`;
+  ctx += `שבתות (ביקורי בוקר): ${c.sabDays}\n`;
+  ctx += `שעות 100% (תוספות): ${c.tot100.toFixed(2)}\n`;
+  ctx += `שעות 200%: ${c.tot200.toFixed(2)}\n`;
+  ctx += `תוספת שבת: ${fmtMoney(c.paySab)} ₪\n`;
+  ctx += `כוננות: ${fmtMoney(c.payStandby)} ₪\n`;
+  ctx += `סה"כ תחזית: ${fmtMoney(c.total)} ₪\n\n`;
+  if(s) {
+    ctx += `=== נתוני תלוש ===\n`;
+    if(s.ot100h!=null) ctx += `קוד 100 (ש"ג 100%): ${s.ot100h} שעות = ${fmtMoney(s.ot100p)} ₪\n`;
+    if(s.ot200h!=null) ctx += `קוד 103 (ש"ג 200%): ${s.ot200h} שעות = ${fmtMoney(s.ot200p)} ₪\n`;
+    if(s.sabD!=null)   ctx += `קוד 109 (שבת בקרים): ${s.sabD} ביקורים = ${fmtMoney(s.sabP)} ₪\n`;
+    if(s.stbyP!=null)  ctx += `קוד 110 (כוננות): ${fmtMoney(s.stbyP)} ₪\n`;
+    const slipTotal = [s.ot100p,s.ot200p,s.sabP,s.stbyP].filter(v=>v!=null).reduce((a,b)=>a+b,0);
+    ctx += `סה"כ תלוש: ${fmtMoney(slipTotal)} ₪\n`;
+    ctx += `הפרש: ${fmtMoney(c.total - slipTotal)} ₪\n\n`;
+  }
+  // Learning history
+  const hist = JSON.parse(localStorage.getItem(HIST_KEY)||'[]');
+  if(hist.length) {
+    ctx += `=== היסטוריה (${hist.length} חודשים) ===\n`;
+    hist.slice(0,6).forEach(r => {
+      ctx += `${r.month}: תחזית=${fmtMoney(r.forecast)}₪, תלוש=${r.slipTotal?fmtMoney(r.slipTotal)+'₪':'—'}, סטטוס=${r.status}\n`;
+    });
+  }
+  return ctx;
+}
+
+// Rule-based local analysis (no API needed)
+function localAnalysis() {
+  const c = calc;
+  const s = slip;
+  if(!c) return 'אין נתוני חישוב. טען קובץ סידור תחילה.';
+
+  let out = '';
+
+  // Formula explanation
+  if(formulaMode === 'mekorot') {
+    out += `📊 נוסחת מקורות פעילה:\n`;
+    out += `  • ש"ג 200% = משמרות לילה (${c.nNights} × 8.5 = ${c.tot200.toFixed(1)} שע)\n`;
+    out += `  • שבת בקרים = ביקורים בבוקר שבת (${c.sabDays} × ${SAB_RATE}₪)\n`;
+    out += `  • ש"ג 100% = תוספות (ללא שעות לילה/שבת) = ${c.tot100.toFixed(1)} שע\n`;
+  } else {
+    out += `📊 נוסחת אקסל (מכסה חודשית) פעילה:\n`;
+    out += `  • שעות בפועל: ${c.totalHours.toFixed(1)} | תקן נדרש: ${c.required.toFixed(1)}\n`;
+    out += `  • ש"ג 200% = שעות מעל המכסה = ${c.tot200.toFixed(1)} שע\n`;
+    if(c.haPar200<0) out += `  ⚠️ הפרש שלילי (${c.haPar200.toFixed(1)}) — הזן משמרות היעדרות לדיוק\n`;
+  }
+  out += '\n';
+
+  // Comparison analysis
+  if(s) {
+    const slipTotal = [s.ot100p,s.ot200p,s.sabP,s.stbyP].filter(v=>v!=null).reduce((a,b)=>a+b,0);
+    const diff = c.total - slipTotal;
+    const pct = Math.abs(diff) / c.total * 100;
+
+    out += `💰 השוואה פיננסית:\n`;
+    out += `  תחזית: ${fmtMoney(c.total)}₪\n`;
+    out += `  תלוש:  ${fmtMoney(slipTotal)}₪\n`;
+    out += `  הפרש:  ${diff>0?'▼ שולם פחות':'▲ שולם יותר'} — ${fmtMoney(Math.abs(diff))}₪ (${pct.toFixed(1)}%)\n\n`;
+
+    if(s.ot200h!=null && c.tot200!=null) {
+      const h200diff = c.tot200 - s.ot200h;
+      if(Math.abs(h200diff)>1) {
+        out += `⚠️ פער בשעות 200%: תחזית ${c.tot200.toFixed(1)} שע, תלוש ${s.ot200h} שע (הפרש ${Math.abs(h200diff).toFixed(1)} שע)\n`;
+        if(formulaMode==='mekorot') out += `   → בדוק: האם ספירת משמרות הלילה בסידור מדויקת?\n`;
+        else out += `   → בדוק: הזן שעות היעדרות/בפועל לחישוב מדויק יותר\n`;
+      }
+    }
+    if(s.sabD!=null && c.sabDays!=null && Math.abs(c.sabDays-s.sabD)>0.1) {
+      out += `⚠️ פער בשבתות: תחזית ${c.sabDays} ביקורים, תלוש ${s.sabD} ביקורים\n`;
+      out += `   → בדוק: האם כל ביקורי שבת בסידור זוהו? (משמרת בוקר בשבת בלבד)\n`;
+    }
+    if(pct < 5) out += `✅ הסכום הכולל תואם בסביר — הפרש < 5%\n`;
+    else if(pct > 20) out += `🚨 פער משמעותי מעל 20% — כדאי לבדוק ידנית מול גיליון נוכחות\n`;
+    else out += `ℹ️ פער בינוני (${pct.toFixed(0)}%) — יתכן בגלל משמרות שלא בוצעו מהסידור\n`;
+  } else {
+    out += `💡 טען תלוש PDF להשוואה מלאה\n`;
+  }
+
+  // History pattern
+  const hist = JSON.parse(localStorage.getItem(HIST_KEY)||'[]');
+  if(hist.length >= 2) {
+    out += '\n📈 ניתוח מגמה:\n';
+    const diffs = hist.filter(r=>r.diff!=null).map(r=>r.diff);
+    const avg = diffs.reduce((a,b)=>a+b,0)/diffs.length;
+    const consistent = diffs.every(d=>d>50) || diffs.every(d=>d<-50);
+    if(consistent && avg>50) out += `  דפוס מתמשך: שולם פחות מהמגיע ב-${hist.length} חודשים. ממוצע: ${fmtMoney(avg)}₪/חודש.\n  → שקול פנייה למחלקת שכר\n`;
+    else if(consistent && avg<-50) out += `  דפוס חיובי: שולם יותר מהמגיע ב-${hist.length} חודשים.\n`;
+    else out += `  אין דפוס עקבי. ממוצע פער: ${fmtMoney(Math.abs(avg))}₪/חודש.\n`;
+  }
+
+  return out;
+}
+
+async function callClaude(prompt) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': aiApiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      messages: [{role:'user', content: prompt}],
+    }),
+  });
+  if(!resp.ok) {
+    const err = await resp.json().catch(()=>({error:{message:resp.statusText}}));
+    throw new Error(err.error?.message || resp.statusText);
+  }
+  const data = await resp.json();
+  return data.content?.[0]?.text || 'לא התקבלה תשובה';
+}
+
+async function callGemini(prompt) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${encodeURIComponent(aiApiKey)}`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: 1024, temperature: 0.4 },
+    }),
+  });
+  if(!resp.ok) {
+    const err = await resp.json().catch(()=>({error:{message:resp.statusText}}));
+    throw new Error(err.error?.message || resp.statusText);
+  }
+  const data = await resp.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'לא התקבלה תשובה';
+}
+
+async function runAiAnalysis(localOnly=false) {
+  const outEl = document.getElementById('aiOutput');
+  if(!outEl) return;
+
+  if(localOnly || !aiApiKey.trim()) {
+    outEl.innerHTML = `<pre style="margin:0;font-family:inherit">${localAnalysis()}</pre>`;
+    return;
+  }
+
+  const ctx = buildAnalysisContext();
+  if(!ctx) { outEl.textContent = 'אין נתונים לניתוח. טען קובץ סידור תחילה.'; return; }
+
+  const prov = AI_PROVIDERS[aiProvider];
+  outEl.innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:var(--muted)">
+    <div style="width:18px;height:18px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite"></div>
+    שולח לניתוח ${prov?.name||'AI'}...
+  </div>`;
+
+  const prompt = `אתה מומחה לדיני עבודה ושכר בישראל, מתמחה בחישובי שכר לבקרי מקורות (עובדי משמרות).
+נתח את הנתונים הבאים וספק:
+1. הסבר מדוע יש פער בין התחזית לתלוש (אם קיים)
+2. בדיקה אם השכר חושב נכון לפי הסכם קיבוצי
+3. המלצות לפעולה אם יש חריגות
+4. הסבר קצר של רכיבי השכר העיקריים
+
+ענה בעברית, בצורה ברורה וממוקדת.
+
+${ctx}`;
+
+  try {
+    let text;
+    if(aiProvider === 'gemini') text = await callGemini(prompt);
+    else                        text = await callClaude(prompt);
+
+    outEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+        <span style="font-size:11px;background:${aiProvider==='gemini'?'#1a73e8':'#7c3aed'};color:#fff;padding:2px 8px;border-radius:10px;font-weight:700">${prov?.name}</span>
+        <span style="font-size:11px;color:var(--muted)">${new Date().toLocaleTimeString('he-IL')}</span>
+      </div>
+      <pre style="margin:0;font-family:inherit;white-space:pre-wrap">${text.replace(/</g,'&lt;')}</pre>`;
+
+    if(scheduleMonth) {
+      const hist = JSON.parse(localStorage.getItem(HIST_KEY)||'[]');
+      const idx = hist.findIndex(r=>r.month===scheduleMonth);
+      if(idx>=0) { hist[idx].aiInsight = text.slice(0,500); localStorage.setItem(HIST_KEY, JSON.stringify(hist)); }
+    }
+  } catch(e) {
+    outEl.innerHTML = `<div class="err" style="margin:0">❌ שגיאה מ-${prov?.name}: ${e.message}</div>
+      <pre style="margin-top:10px;font-family:inherit;white-space:pre-wrap">${localAnalysis()}</pre>`;
+  }
+}
+
+// ── Learning System ──────────────────────────────────────────────────────────
+const HIST_KEY='salary-history-v2';
+function _saveMonthResult(month, forecast, slipTotal, diff, status, isHoursAnalysis){
+  if(!month) return;
+  const arr=JSON.parse(localStorage.getItem(HIST_KEY)||'[]');
+  const idx=arr.findIndex(r=>r.month===month);
+  const rec={month, forecast, slipTotal, diff, status, isHA:!!isHoursAnalysis, savedAt:new Date().toISOString()};
+  if(idx>=0)arr[idx]=rec; else arr.push(rec);
+  arr.sort((a,b)=>b.month.localeCompare(a.month));
+  localStorage.setItem(HIST_KEY, JSON.stringify(arr));
+  renderHistory();
+}
+
+function renderHistory(){
+  const card=document.getElementById('historyCard');
+  if(!card) return;
+  const arr=JSON.parse(localStorage.getItem(HIST_KEY)||'[]');
+  if(!arr.length){card.classList.add('hidden');return;}
+  card.classList.remove('hidden');
+  const fmtM=ym=>{const[y,m]=ym.split('-').map(Number);return `${LIB_HE[m-1]} ${y}`;};
+  const sColor=s=>s==='תקין'?'var(--success)':s==='פער'?'var(--danger)':'var(--warning)';
+  const rows=arr.map(r=>{
+    const d=r.diff||0; const dAbs=Math.abs(d);
+    const dStr=dAbs<50?'תואם':(d>0?'▼ ':'▲ ')+fmtMoney(dAbs)+' ₪';
+    return `<tr>
+      <td>${fmtM(r.month)}</td>
+      <td class="num">${fmtMoney(r.forecast)} ₪</td>
+      <td class="num">${r.slipTotal?fmtMoney(r.slipTotal)+' ₪':'—'}</td>
+      <td class="num" style="color:${sColor(r.status)}">${dStr}</td>
+      <td>${r.isHA?'<span style="color:#7c3aed;font-size:11px;font-weight:700">גיליון נוכחות</span>':'<span style="color:#0891b2;font-size:11px;font-weight:700">תלוש</span>'}</td>
+      <td style="color:${sColor(r.status)};font-weight:700">${r.status}</td>
+      <td><button class="sec sml" onclick="_histDelete('${r.month}')">✕</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('historyBody').innerHTML=rows;
+
+  // Pattern analysis
+  const diffs=arr.filter(r=>r.diff!=null&&Math.abs(r.diff)>=50).map(r=>r.diff);
+  let pattern='';
+  if(diffs.length>=2){
+    const avgDiff=diffs.reduce((a,b)=>a+b,0)/diffs.length;
+    const allLow=diffs.every(d=>d>50);
+    const allHigh=diffs.every(d=>d<-50);
+    if(allLow) pattern=`<div class="warn">⚠️ <strong>דפוס מתמשך:</strong> ב-${diffs.length} חודשים שנבדקו — שולם פחות מהמגיע. ממוצע פער: ${fmtMoney(Math.abs(avgDiff))} ₪/חודש. כדאי לבקש בדיקה של מחלקת שכר.</div>`;
+    else if(allHigh) pattern=`<div class="ok">✅ <strong>דפוס חיובי:</strong> ב-${diffs.length} חודשים — שולם יותר מהתחזית.</div>`;
+    else if(Math.abs(avgDiff)>200) pattern=`<div class="info">ℹ️ <strong>ממוצע פער:</strong> ${avgDiff>0?'▼ שולם פחות מהמגיע':'▲ שולם יותר מהתחזית'} — ${fmtMoney(Math.abs(avgDiff))} ₪/חודש.</div>`;
+    else pattern=`<div class="info">ℹ️ <strong>ניתוח:</strong> ${arr.length} חודשים עם ממוצע פער ${fmtMoney(Math.abs(avgDiff))} ₪. אין דפוס ברור.</div>`;
+  }
+  document.getElementById('historyPattern').innerHTML=pattern;
+}
+
+function _histDelete(month){
+  const arr=JSON.parse(localStorage.getItem(HIST_KEY)||'[]').filter(r=>r.month!==month);
+  localStorage.setItem(HIST_KEY, JSON.stringify(arr));
+  renderHistory();
+}
+function _histClear(){if(confirm('מחק את כל היסטוריית ההשוואות?')){localStorage.removeItem(HIST_KEY);renderHistory();}}
+
+// ── Library ─────────────────────────────────────────────────────────────────
+let libFiles    = [];
+let libWordFile  = null;
+let libPdfFile   = null;
+let libHoursFile = null;
+
+const LIB_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const LIB_EN = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+
+// IndexedDB helpers — persist directory handle across sessions
+function _idbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open('salary-lib-v1',1);r.onupgradeneeded=()=>r.result.createObjectStore('data');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function _idbPut(k,v){try{const db=await _idbOpen();const tx=db.transaction('data','readwrite');tx.objectStore('data').put(v,k);await new Promise(r=>tx.oncomplete=r);db.close();}catch(e){}}
+async function _idbGet(k){try{const db=await _idbOpen();return await new Promise(res=>{const tx=db.transaction('data','readonly');const r=tx.objectStore('data').get(k);r.onsuccess=()=>res(r.result||null);r.onerror=()=>res(null);});}catch(e){return null;}}
+
+// ── Folder picker (File System Access API) ────────────────────────────────
+async function pickLibraryFolder(){
+  const st=document.getElementById('libSetupStatus');
+  st.textContent='לחוץ...';
+  if(!('showDirectoryPicker' in window)){
+    st.textContent='API לא נתמך — לחץ "חלופה"';
+    return;
+  }
+  try{
+    st.textContent='ממתין לבחירה...';
+    const h=await window.showDirectoryPicker();
+    st.textContent='טוען...';
+    await _idbPut('dirHandle',h);
+    await _activateLib(h);
+  }catch(e){
+    if(e.name==='AbortError'){st.textContent='';}
+    else{st.textContent='שגיאה: '+e.name+' — '+e.message;}
+  }
+}
+
+async function _activateLib(handle){
+  document.getElementById('libSetup').classList.add('hidden');
+  document.getElementById('libReady').classList.remove('hidden');
+  document.getElementById('libFolderName').textContent='📂 '+handle.name;
+  libFiles=[];
+  for await(const[n,e] of handle.entries()){
+    if(e.kind==='file'){const nl=n.toLowerCase();if(nl.endsWith('.docx')||nl.endsWith('.pdf'))libFiles.push({name:n,handle:e,type:nl.endsWith('.docx')?'docx':'pdf'});}
+  }
+  libFiles.sort((a,b)=>a.name.localeCompare(b.name,'he'));
+  _libDefaultMonth(); _renderLibAll(); matchLibraryFiles();
+}
+
+// ── Fallback: webkitdirectory via hidden iframe (prevents page navigation) ──
+function _pickViaFrame(){
+  const fr=document.getElementById('libFrame');
+  fr.srcdoc='<input id=i type=file webkitdirectory style=display:none onchange="if(this.files&&this.files.length)parent.loadFromDirectory(this.files)"><script>document.getElementById(\'i\').click()<\/script>';
+}
+
+// ── Fallback: webkitdirectory input ──────────────────────────────────────
+document.getElementById('libDirFallback').addEventListener('change',function(){loadFromDirectory(this.files);});
+
+function loadFromDirectory(fileList){
+  const st=document.getElementById('libSetupStatus');
+  try{
+    if(!fileList||!fileList.length){if(st)st.textContent='לא נבחרו קבצים';return;}
+    if(st)st.textContent='טוען '+fileList.length+' קבצים...';
+    libFiles=[];
+    for(const f of fileList){const nl=f.name.toLowerCase();if(nl.endsWith('.docx')||nl.endsWith('.pdf'))libFiles.push({name:f.name,file:f,type:nl.endsWith('.docx')?'docx':'pdf'});}
+    libFiles.sort((a,b)=>a.name.localeCompare(b.name,'he'));
+    const folder=fileList[0].webkitRelativePath?fileList[0].webkitRelativePath.split('/')[0]:'תיקייה';
+    document.getElementById('libSetup').classList.add('hidden');
+    document.getElementById('libReady').classList.remove('hidden');
+    document.getElementById('libFolderName').textContent='📂 '+folder+' ('+libFiles.length+' קבצים)';
+    _libDefaultMonth(); _renderLibAll(); matchLibraryFiles();
+  }catch(e){if(st)st.textContent='שגיאה: '+e.message;}
+}
+
+function _libDefaultMonth(){
+  const now=new Date();let m=now.getMonth(),y=now.getFullYear();
+  if(m===0){m=12;y--;}
+  document.getElementById('libMonth').value=`${y}-${String(m).padStart(2,'0')}`;
+  _refreshLibMonthDisplay();
+}
+
+function _refreshLibMonthDisplay(){
+  const mv=document.getElementById('libMonth').value;
+  if(!mv)return;
+  const[y,m]=mv.split('-').map(Number);
+  const el=document.getElementById('libMonthDisplay');
+  if(el) el.textContent=`${LIB_HE[m-1]} ${y}`;
+}
+
+function libMonthNav(delta){
+  const mv=document.getElementById('libMonth').value;
+  const[y,m]=mv?mv.split('-').map(Number):[new Date().getFullYear(),new Date().getMonth()+1];
+  const d=new Date(y,m-1+delta,1);
+  document.getElementById('libMonth').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  _refreshLibMonthDisplay();
+  matchLibraryFiles();
+}
+
+function _onLibMonthChange(){_refreshLibMonthDisplay();matchLibraryFiles();}
+
+// ── File scoring ─────────────────────────────────────────────────────────
+function _scoreDoc(name,yr,mo){
+  const n=name.toLowerCase().replace(/\.docx$/,'');
+  const pm=mo===1?12:mo-1;let s=0;
+  const p=v=>String(v).padStart(2,'0');
+  if(new RegExp(`${pm}[-_./]${mo}`).test(n)||new RegExp(`${p(pm)}[-_./]${p(mo)}`).test(n))s+=12;
+  if(n.includes(LIB_HE[pm-1]))s+=5; if(n.includes(LIB_HE[mo-1]))s+=5;
+  if(n.includes(LIB_EN[pm-1]))s+=3; if(n.includes(LIB_EN[mo-1]))s+=3;
+  if(n.includes(String(yr))||n.includes(String(yr).slice(2)))s+=2;
+  if(/סידור|schedule|shift/.test(n))s+=1;
+  return s;
+}
+function _scorePdf(name,yr,mo){
+  const n=name.toLowerCase().replace(/\.pdf$/,'');
+  const m2=String(mo).padStart(2,'0');let s=0;
+  if(n.includes(`${yr}-${m2}`)||n.includes(`${m2}-${yr}`))s+=14;
+  if(n.includes(`${yr}_${m2}`)||n.includes(`${m2}_${yr}`))s+=14;
+  if(n.includes(`${yr}${m2}`)||n.includes(`${m2}${yr}`))s+=8;
+  if(n.includes(LIB_HE[mo-1]))s+=8; if(n.includes(LIB_EN[mo-1]))s+=5;
+  if(n.includes(String(yr)))s+=2;
+  if(/תלוש|payslip|salary/.test(n))s+=1;
+  return s;
+}
+function _isHoursFile(name){return /hoursanalysis|hours.?info|נוכחות|עיבוד.?נוכח|גיליון.?נוכח/.test(name.toLowerCase().replace(/\.pdf$/,''));}
+function _scoreHours(name,yr,mo){
+  const n=name.toLowerCase().replace(/\.pdf$/,'');
+  const m2=String(mo).padStart(2,'0'); let s=0;
+  if(/hoursanalysis|hours.?info|נוכחות|עיבוד.?נוכח|גיליון.?נוכח/.test(n))s+=8;
+  if(n.includes(`${yr}-${m2}`)||n.includes(`${m2}-${yr}`))s+=14;
+  if(n.includes(`${yr}_${m2}`)||n.includes(`${m2}_${yr}`))s+=14;
+  if(n.includes(`${yr}${m2}`)||n.includes(`${m2}${yr}`))s+=8;
+  if(n.includes(LIB_HE[mo-1]))s+=8;
+  if(n.includes(String(yr)))s+=2;
+  return s;
+}
+
+// ── Match files to selected month ─────────────────────────────────────────
+function matchLibraryFiles(){
+  const mv=document.getElementById('libMonth').value;
+  if(!mv||!libFiles.length){document.getElementById('libLoadBtn').disabled=true;return;}
+  const[yr,mo]=mv.split('-').map(Number);
+  const pm=mo===1?12:mo-1, pyr=mo===1?yr-1:yr;
+
+  const docR=libFiles.filter(f=>f.type==='docx').map(f=>({...f,score:_scoreDoc(f.name,yr,mo)})).sort((a,b)=>b.score-a.score);
+  // Separate PDFs by type: hours analysis (name contains keyword) vs payslip
+  const allPdf=libFiles.filter(f=>f.type==='pdf');
+  const hoursArr=allPdf.filter(f=> _isHoursFile(f.name)).map(f=>({...f,score:_scoreHours(f.name,yr,mo)})).sort((a,b)=>b.score-a.score);
+  const payArr  =allPdf.filter(f=>!_isHoursFile(f.name)).map(f=>({...f,score:_scorePdf(f.name,yr,mo)})).sort((a,b)=>b.score-a.score);
+  // Minimum score to auto-select — prevents picking wrong-month files
+  libWordFile =(docR[0]    &&docR[0].score>=4   )?docR[0]   :null;
+  libHoursFile=(hoursArr[0]&&hoursArr[0].score>=10)?hoursArr[0]:null;
+  libPdfFile  =(payArr[0]  &&payArr[0].score>=5  )?payArr[0] :null;
+
+  const scC=s=>s>=8?'hi':s>=3?'mid':'lo';
+  const scL=s=>s>=8?'התאמה גבוהה':s>=3?'התאמה חלקית':'לא בטוח';
+  const gStyle='background:var(--green-light);border-color:var(--success)';
+
+  const wB=libWordFile
+    ?`<div class="lib-file" style="${gStyle}">📄 <span class="fname">${libWordFile.name}</span>
+       <span class="lib-score ${scC(libWordFile.score)}">${scL(libWordFile.score)}</span>
+       <button class="sec sml" onclick="libManualPick('docx')">🔄 בחר אחר</button></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px">תקופה: 16/${pm}/${pyr} – 15/${mo}/${yr}</div>`
+    :`<div class="warn">לא נמצא קובץ סידור — <button class="sec sml" onclick="libManualPick('docx')">בחר ידנית</button></div>`;
+
+  const hB=libHoursFile
+    ?`<div class="lib-file" style="${gStyle}">🕐 <span class="fname">${libHoursFile.name}</span>
+       <span class="lib-score ${scC(libHoursFile.score)}">${scL(libHoursFile.score)}</span>
+       <button class="sec sml" onclick="libManualPick('hours')">🔄 בחר אחר</button></div>`
+    :`<div style="font-size:12px;color:var(--muted);padding:4px 0">לא נמצא גיליון נוכחות &nbsp;<button class="sec sml" onclick="libManualPick('hours')">בחר ידנית</button></div>`;
+
+  const pB=libPdfFile
+    ?`<div class="lib-file" style="${gStyle}">📑 <span class="fname">${libPdfFile.name}</span>
+       <span class="lib-score ${scC(libPdfFile.score)}">${scL(libPdfFile.score)}</span>
+       <button class="sec sml" onclick="libManualPick('pdf')">🔄 בחר אחר</button></div>`
+    :`<div style="font-size:12px;color:var(--muted);padding:4px 0">לא נמצא תלוש &nbsp;<button class="sec sml" onclick="libManualPick('pdf')">בחר ידנית</button></div>`;
+
+  document.getElementById('libMatches').innerHTML=`<div class="grid2" style="margin-top:8px">
+    <div><h3>📄 סידור עבודה</h3>${wB}</div>
+    <div>
+      <h3>🕐 גיליון נוכחות</h3>${hB}
+      <h3 style="margin-top:10px">📑 תלוש שכר</h3>${pB}
+    </div>
+  </div>`;
+  document.getElementById('libLoadBtn').disabled=!libWordFile&&!libPdfFile&&!libHoursFile;
+}
+
+// ── Manual file picker modal ──────────────────────────────────────────────
+function libManualPick(type){
+  document.getElementById('_libPickOv')?.remove();
+  const mv=document.getElementById('libMonth').value;
+  const[yr,mo]=mv?mv.split('-').map(Number):[new Date().getFullYear(),new Date().getMonth()||12];
+  const list=(type==='docx'
+    ?libFiles.filter(f=>f.type==='docx').map(f=>({...f,score:_scoreDoc(f.name,yr,mo)}))
+    :type==='hours'
+    ?libFiles.filter(f=>f.type==='pdf'&& _isHoursFile(f.name)).map(f=>({...f,score:_scoreHours(f.name,yr,mo)}))
+    :libFiles.filter(f=>f.type==='pdf'&&!_isHoursFile(f.name)).map(f=>({...f,score:_scorePdf(f.name,yr,mo)}))).sort((a,b)=>b.score-a.score);
+  if(!list.length){alert(type==='hours'?'לא נמצאו קבצי גיליון נוכחות בתיקייה\n(שם הקובץ צריך להכיל: HoursAnalysis / נוכחות / עיבוד נוכח)':'אין קבצים מתאימים בתיקייה');return;}
+  const scC=s=>s>=8?'hi':s>=3?'mid':'lo';
+  const ov=document.createElement('div');
+  ov.id='_libPickOv';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;display:flex;align-items:center;justify-content:center;';
+  ov.innerHTML=`<div style="background:#fff;border-radius:14px;padding:20px;max-width:520px;width:90%;max-height:75vh;overflow-y:auto;direction:rtl">
+    <h2 style="margin-bottom:12px">${type==='docx'?'📄 בחר קובץ סידור':type==='hours'?'🕐 בחר גיליון נוכחות':'📑 בחר קובץ תלוש'}</h2>
+    ${list.map((f,i)=>`<div class="lib-file" onclick="_libPickDone(${i})" style="cursor:pointer;margin-bottom:5px">
+      ${type==='docx'?'📄':type==='hours'?'🕐':'📑'} <span class="fname">${f.name}</span>
+      ${f.score>0?`<span class="lib-score ${scC(f.score)}">${f.score}</span>`:''}
+    </div>`).join('')}
+    <div style="margin-top:12px"><button class="sec sml" onclick="document.getElementById('_libPickOv').remove()">✕ סגור</button></div>
+  </div>`;
+  window._libPickDone=i=>{
+    if(type==='docx')libWordFile=list[i];else if(type==='hours')libHoursFile=list[i];else libPdfFile=list[i];
+    document.getElementById('_libPickOv')?.remove();
+    matchLibraryFiles();
+  };
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  document.body.appendChild(ov);
+}
+
+// ── Load selected files into the tool ────────────────────────────────────
+async function loadLibraryFiles(){
+  // Reset all state before loading a fresh month
+  slip=null; hoursSlip=null; calc=null; scheduleMonth=null;
+  document.getElementById('compareCard').classList.add('hidden');
+  document.getElementById('dzW').classList.remove('done');
+  document.getElementById('dzWsub').textContent='docx — לחץ או גרור';
+  document.getElementById('dzP').classList.remove('done');
+  document.getElementById('dzPsub').textContent='לחץ או גרור';
+  document.getElementById('st1').innerHTML='';
+  document.getElementById('st2').innerHTML='';
+  document.getElementById('dbgPayslip').style.display='none';
+  setStep(1);
+
+  const mv=document.getElementById('libMonth').value;
+  if(mv)document.getElementById('monthOverride').value=mv;
+  if(libWordFile){
+    const f=libWordFile.file?libWordFile.file:libWordFile.handle?await libWordFile.handle.getFile():null;
+    if(f)await loadWord(f);
+  }
+  if(libHoursFile){
+    const f=libHoursFile.file?libHoursFile.file:libHoursFile.handle?await libHoursFile.handle.getFile():null;
+    if(f)await loadPayslip(f);
+  }
+  if(libPdfFile){
+    const f=libPdfFile.file?libPdfFile.file:libPdfFile.handle?await libPdfFile.handle.getFile():null;
+    if(f)await loadPayslip(f);
+  }
+}
+
+function _renderLibAll(){
+  const d=libFiles.filter(f=>f.type==='docx'),p=libFiles.filter(f=>f.type==='pdf');
+  const row=f=>`<div class="lib-file">${f.type==='docx'?'📄':'📑'} <span class="fname">${f.name}</span></div>`;
+  document.getElementById('libDocxList').innerHTML=d.length?d.map(row).join(''):'<span style="color:var(--muted);font-size:12px">אין קבצי Word</span>';
+  document.getElementById('libPdfList').innerHTML=p.length?p.map(row).join(''):'<span style="color:var(--muted);font-size:12px">אין קבצי PDF</span>';
+}
+
+// ── Auto-restore saved directory on page load ─────────────────────────────
+renderHistory();
+selectAiProvider(aiProvider, false);
+(async()=>{
+  if(!('showDirectoryPicker' in window))return;
+  try{
+    const h=await _idbGet('dirHandle');
+    if(!h)return;
+    const perm=await h.queryPermission({mode:'read'});
+    if(perm==='granted'){await _activateLib(h);}
+    else{
+      document.getElementById('libSetupStatus').innerHTML=
+        `ספרייה שמורה: <strong>${h.name}</strong> &nbsp;<button class="sec sml" onclick="_libRestore()">🔓 הפעל שוב</button>`;
+      window._savedLibH=h;
+    }
+  }catch(e){}
+})();
+async function _libRestore(){
+  const h=window._savedLibH;if(!h)return;
+  try{const p=await h.requestPermission({mode:'read'});if(p==='granted'){await _idbPut('dirHandle',h);await _activateLib(h);}}catch(e){}
+}
+</script>
 </body>
 </html>
