@@ -535,6 +535,7 @@ let editorCounts = {};
 let calc         = null;
 let slip         = null;
 let hoursSlip    = null;
+let slipRawText  = null;
 let scheduleMonth = null;
 
 // ── Names ──────────────────────────────────────────────────────────────────
@@ -584,7 +585,7 @@ function setStep(n) {
 async function loadWord(file) {
   if (!file) return;
   // Reset comparison data when loading a new schedule
-  slip=null; hoursSlip=null;
+  slip=null; hoursSlip=null; slipRawText=null;
   document.getElementById('compareCard').classList.add('hidden');
   document.getElementById('dzP').classList.remove('done');
   document.getElementById('dzPsub').textContent='לחץ או גרור';
@@ -1120,6 +1121,7 @@ async function loadPayslip(file){
   st.innerHTML='<div class="info"><span class="loader"></span> מנתח תלוש…</div>';
   try{
     const txt=await extractPDFText(file);
+    slipRawText = txt;
     dbgP(`טקסט: ${txt.length} תווים`);
 
     // Auto-detect גיליון נוכחות → stored separately in hoursSlip
@@ -1464,6 +1466,26 @@ function updateAiBtn() {
   onAiKeyInput(document.getElementById('aiKeyInput')?.value || '');
 }
 
+// Extract work dates from raw payslip/attendance sheet text
+function extractWorkDates(text) {
+  if(!text || !scheduleMonth) return new Set();
+  const [yr, mo] = scheduleMonth.split('-').map(Number);
+  const found = new Set();
+  // Match DD/MM/YYYY, DD/MM/YY, DD/MM, DD.MM.YYYY, DD.MM.YY, DD.MM
+  const re = /\b(\d{1,2})[\/.](\d{1,2})(?:[\/.](\d{2,4}))?\b/g;
+  let m;
+  while((m = re.exec(text)) !== null) {
+    const d = parseInt(m[1]), mn = parseInt(m[2]);
+    if(d < 1 || d > 31 || mn < 1 || mn > 12) continue;
+    if(mn !== mo) continue; // only current month dates
+    let y = yr;
+    if(m[3]) { y = parseInt(m[3]); if(y < 100) y += 2000; }
+    if(y !== yr) continue;
+    found.add(`${y}-${String(mn).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
+  }
+  return found;
+}
+
 // Build analysis context from current state
 function buildAnalysisContext() {
   const c = calc;
@@ -1560,14 +1582,42 @@ function buildAnalysisContext() {
         ctx += Math.abs(gapStby)<10 ? ` ← תואם ✓\n` : ` ← בדוק!\n`;
       }
 
-      // Shift-level detail
+      // Work-day cross-reference: schedule dates vs. sheet dates
       if(shifts && shifts.length) {
-        ctx += `\nתאריכי משמרות מהסידור (${shifts.length} סה"כ):\n`;
-        const byType = {};
-        shifts.forEach(sh => { byType[sh.type]=(byType[sh.type]||[]); byType[sh.type].push(sh.dateStr+`(${sh.dayLetter})`); });
-        Object.entries(byType).forEach(([t,dates]) => {
-          ctx += `  ${LABELS[t]||t}: ${dates.join(', ')}\n`;
-        });
+        const schedDates = new Set(shifts.filter(sh=>sh.date).map(sh=>sh.dateStr));
+        const sheetDates = extractWorkDates(slipRawText);
+
+        ctx += `\n=== השוואת ימי עבודה: סידור ↔ גיליון מנותח ===\n`;
+        ctx += `ימים בסידור: ${schedDates.size} | ימים שזוהו בגיליון: ${sheetDates.size}\n`;
+
+        if(sheetDates.size > 0) {
+          const inSchedNotSheet = [...schedDates].filter(d=>!sheetDates.has(d)).sort();
+          const inSheetNotSched = [...sheetDates].filter(d=>!schedDates.has(d)).sort();
+
+          if(inSchedNotSheet.length) {
+            ctx += `\n⚠️ ימים בסידור שאינם בגיליון (${inSchedNotSheet.length} ימים):\n`;
+            inSchedNotSheet.forEach(d => {
+              const sh = shifts.find(s=>s.dateStr===d);
+              ctx += `  ${d} (${sh?sh.dayLetter:'?'}) — ${sh?LABELS[sh.type]||sh.type:'?'}\n`;
+            });
+            ctx += `  → משמרות אלו לא נכנסו לחישוב השכר בגיליון!\n`;
+          } else {
+            ctx += `כל ימי הסידור מופיעים בגיליון ✓\n`;
+          }
+
+          if(inSheetNotSched.length) {
+            ctx += `\nימים בגיליון שאינם בסידור (${inSheetNotSched.length} ימים): ${inSheetNotSched.join(', ')}\n`;
+          }
+        } else {
+          // Fallback: list schedule dates for AI to compare manually
+          ctx += `(לא זוהו תאריכים בגיליון — הבינה המלאכותית תנסה לאתר ידנית)\n`;
+          ctx += `ימי עבודה מהסידור:\n`;
+          const byType = {};
+          shifts.forEach(sh => { (byType[sh.type]=byType[sh.type]||[]).push(sh.dateStr+`(${sh.dayLetter})`); });
+          Object.entries(byType).forEach(([t,dates]) => {
+            ctx += `  ${LABELS[t]||t}: ${dates.join(', ')}\n`;
+          });
+        }
       }
       ctx += '\n';
     }
@@ -1760,8 +1810,8 @@ async function runAiAnalysis(localOnly=false) {
 נתח את הנתונים הבאים וספק:
 1. הסבר מדוע יש פער בין התחזית לתלוש (אם קיים)
 2. בדיקה אם השכר חושב נכון לפי הסכם קיבוצי
-3. המלצות לפעולה אם יש חריגות
-4. הסבר קצר של רכיבי השכר העיקריים
+3. השוואת ימי עבודה — אם יש סעיף "השוואת ימי עבודה: סידור ↔ גיליון מנותח", ציין בדיוק אילו ימי עבודה מהסידור חסרים בגיליון ואילו ימים בגיליון אינם בסידור, ומה המשמעות לשכר
+4. המלצות לפעולה אם יש חריגות
 
 ענה בעברית, בצורה ברורה וממוקדת.
 
@@ -2066,7 +2116,7 @@ function libManualPick(type){
 // ── Load selected files into the tool ────────────────────────────────────
 async function loadLibraryFiles(){
   // Reset all state before loading a fresh month
-  slip=null; hoursSlip=null; calc=null; scheduleMonth=null;
+  slip=null; hoursSlip=null; slipRawText=null; calc=null; scheduleMonth=null;
   document.getElementById('compareCard').classList.add('hidden');
   document.getElementById('dzW').classList.remove('done');
   document.getElementById('dzWsub').textContent='docx — לחץ או גרור';
