@@ -1124,19 +1124,35 @@ async function loadPayslip(file){
   try{
     const txt=await extractPDFText(file);
     slipRawText = txt;
-    dbgP(`טקסט: ${txt.length} תווים`);
+    dbgP(`טקסט: ${txt.length} תווים | שם: ${file.name}`);
     dbgP(`--- 200 תווים ראשונים ---\n${txt.slice(0,200)}\n---`);
+
+    // Detect hours file by filename first (fallback when encoding garbles Hebrew text)
+    if(_isHoursFile(file.name||'')) {
+      hoursRawText = txt;
+      dbgP('זוהה כגיליון נוכחות לפי שם קובץ → hoursRawText נשמר');
+    }
 
     // Auto-detect גיליון נוכחות → stored separately in hoursSlip
     const hoursData=parseHoursAnalysis(txt);
     if(hoursData){
       hoursSlip=hoursData;
-      hoursRawText=txt;   // keep separate — payslip load must not overwrite this
+      hoursRawText=txt;   // also set by content detection
       document.getElementById('dzP').classList.add('done');
       document.getElementById('dzPsub').textContent=`✓ גיליון נוכחות`;
       document.getElementById('dbgPayslip').style.display='';
       const found=[hoursSlip.ot100p,hoursSlip.ot200p,hoursSlip.sabP,hoursSlip.stbyP].filter(v=>v!=null).length;
       st.innerHTML=`<div class="ok">✓ גיליון נוכחות — <strong>${found}/4</strong> רכיבים. ממתין לתלוש לצורך השוואה מדויקת.</div>`;
+      if(calc){renderCompare();document.getElementById('compareCard').classList.remove('hidden');setStep(4);}
+      return;
+    }
+
+    // File named as HoursAnalysis but content-detection failed (garbled encoding)
+    // → still skip payslip processing so it doesn't count as a payslip
+    if(_isHoursFile(file.name||'')) {
+      document.getElementById('dzP').classList.add('done');
+      document.getElementById('dzPsub').textContent=`✓ גיליון נוכחות`;
+      st.innerHTML=`<div class="ok">✓ גיליון נוכחות — טקסט נשמר לבדיקת ימי עבודה (קידוד לא סטנדרטי).</div>`;
       if(calc){renderCompare();document.getElementById('compareCard').classList.remove('hidden');setStep(4);}
       return;
     }
