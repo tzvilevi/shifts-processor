@@ -1634,12 +1634,22 @@ function extractWorkDates(text) {
   const ABSENCE_RE_LOCAL = /חופשה|מחלה|מנוחה|שבתון/;
   let m;
 
+  // Hebrew letters in proper Unicode AND as garbled CP1255/WinAnsi Latin-1 bytes
+  // (PDF.js misreads Windows-1255: ב→á, ג→â, ד→ã, ה→ä, ו→å, ש→ù, א→à …)
+  const HE = '[\\u05D0-\\u05EA\\u00E0-\\u00FA]';
+  const reLTR = new RegExp(`\\b(\\d{1,2})\\s+(\\d{1,2})\\s*\\/\\s*${HE}`);
+  const reRTL = new RegExp(`${HE}\\s*\\/\\s*(\\d{1,2})\\s+(\\d{1,2})\\b`);
+
+  // Absence keywords in both Unicode Hebrew and garbled form
+  // (חופשה garbled: ç+ôùçä or similar — just check numbers context)
+  const ABSENCE_WORDS = /[חç][וå][פô][שù][הä]|[מî][חç][לë][הä]|[מî][נð][וå][חç][הä]/;
+
   text.split('\n').forEach(line => {
     const hasTime   = /\b\d{1,2}:\d{2}\b/.test(line);
-    const isAbsence = ABSENCE_RE_LOCAL.test(line);
+    const isAbsence = ABSENCE_RE_LOCAL.test(line) || ABSENCE_WORDS.test(line);
 
-    // ── Pattern A: LTR order "MM DD/Hebrew" e.g. "02 16/ב" ──
-    let md = line.match(/\b(\d{1,2})\s+(\d{1,2})\s*\/\s*[א-ת]/);
+    // ── Pattern A: LTR "MM DD/DayLetter" e.g. "02 16/ב" or "02 16/á" ──
+    let md = line.match(reLTR);
     if(md) {
       const mo = parseInt(md[1]), d = parseInt(md[2]);
       if(d>=1&&d<=31&&mo>=1&&mo<=12) {
@@ -1648,8 +1658,8 @@ function extractWorkDates(text) {
         return;
       }
     }
-    // ── Pattern B: RTL order (PDF.js may reverse) "Hebrew/ DD MM" e.g. "ב/ 16 02" ──
-    md = line.match(/[א-ת]\s*\/\s*(\d{1,2})\s+(\d{1,2})\b/);
+    // ── Pattern B: RTL "DayLetter/ DD MM" e.g. "á/ 16 02" ──
+    md = line.match(reRTL);
     if(md) {
       const d = parseInt(md[1]), mo = parseInt(md[2]);
       if(d>=1&&d<=31&&mo>=1&&mo<=12) {
@@ -1675,7 +1685,8 @@ function extractWorkDates(text) {
     if(shifts.some(sh=>sh.dateStr===ds)) found.add(ds);
   }
 
-  dbgP(`חילוץ תאריכים: ${found.size} ימי עבודה | שורה לדוגמה: "${text.split('\n').find(l=>/\d{1,2}.*[א-ת].*\d{1,2}:\d{2}/.test(l))||'לא נמצא'}"`)
+  const sampleLine = text.split('\n').find(l=>/\d{1,2}.*[א-תà-ú].*\d{1,2}:\d{2}/.test(l)) || 'לא נמצא';
+  dbgP(`חילוץ תאריכים: ${found.size} ימי עבודה | שורה לדוגמה: "${sampleLine}"`);
   return found;
 }
 
