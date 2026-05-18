@@ -1124,6 +1124,7 @@ async function loadPayslip(file){
     const txt=await extractPDFText(file);
     slipRawText = txt;
     dbgP(`טקסט: ${txt.length} תווים`);
+    dbgP(`--- 200 תווים ראשונים ---\n${txt.slice(0,200)}\n---`);
 
     // Auto-detect גיליון נוכחות → stored separately in hoursSlip
     const hoursData=parseHoursAnalysis(txt);
@@ -1540,21 +1541,38 @@ function updateAiBtn() {
 
 // Extract work dates from raw payslip/attendance sheet text
 function extractWorkDates(text) {
-  if(!text || !scheduleMonth) return new Set();
-  const [yr, mo] = scheduleMonth.split('-').map(Number);
+  if(!text || !shifts || !shifts.length) return new Set();
+
+  // Build lookup: "DD-MM" and "D-M" → full YYYY-MM-DD string
+  const lookup = new Map();
+  shifts.filter(sh=>sh.date).forEach(sh => {
+    const d = sh.date.getDate(), mo = sh.date.getMonth()+1;
+    lookup.set(`${String(d).padStart(2,'0')}-${String(mo).padStart(2,'0')}`, sh.dateStr);
+    lookup.set(`${d}-${mo}`, sh.dateStr); // without leading zeros
+  });
+
   const found = new Set();
-  // Match DD/MM/YYYY, DD/MM/YY, DD/MM, DD.MM.YYYY, DD.MM.YY, DD.MM
-  const re = /\b(\d{1,2})[\/.](\d{1,2})(?:[\/.](\d{2,4}))?\b/g;
+
+  // Pattern 1: DD/MM or DD.MM (with optional year)
+  const re1 = /\b(\d{1,2})[\/.](\d{1,2})(?:[\/.](?:\d{2}|\d{4}))?\b/g;
   let m;
-  while((m = re.exec(text)) !== null) {
-    const d = parseInt(m[1]), mn = parseInt(m[2]);
-    if(d < 1 || d > 31 || mn < 1 || mn > 12) continue;
-    if(mn !== mo) continue; // only current month dates
-    let y = yr;
-    if(m[3]) { y = parseInt(m[3]); if(y < 100) y += 2000; }
-    if(y !== yr) continue;
-    found.add(`${y}-${String(mn).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
+  while((m = re1.exec(text)) !== null) {
+    const d = parseInt(m[1]), mo = parseInt(m[2]);
+    if(d < 1 || d > 31 || mo < 1 || mo > 12) continue;
+    const key1 = `${String(d).padStart(2,'0')}-${String(mo).padStart(2,'0')}`;
+    const key2 = `${d}-${mo}`;
+    if(lookup.has(key1)) found.add(lookup.get(key1));
+    else if(lookup.has(key2)) found.add(lookup.get(key2));
   }
+
+  // Pattern 2: YYYY-MM-DD or YYYY/MM/DD
+  const re2 = /\b(20\d{2})[-\/](\d{2})[-\/](\d{2})\b/g;
+  while((m = re2.exec(text)) !== null) {
+    const ds = `${m[1]}-${m[2]}-${m[3]}`;
+    if(shifts.some(sh=>sh.dateStr===ds)) found.add(ds);
+  }
+
+  dbgP(`חילוץ תאריכים מגיליון: נמצאו ${found.size} תואמים | מפתחות סידור: ${lookup.size/2} | דוגמת טקסט PDF: ${text.slice(0,300).replace(/\n/g,' ')}`);
   return found;
 }
 
