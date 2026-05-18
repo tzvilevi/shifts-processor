@@ -1473,6 +1473,7 @@ function buildAnalysisContext() {
   ctx += `נוסחה בשימוש: ${formulaMode === 'mekorot' ? 'נוסחת מקורות' : 'נוסחת אקסל'}\n`;
   ctx += `שעות תקן חודשי: ${monthlyStd}\n`;
   ctx += `משמרות היעדרות: ${nVacationShifts}\n\n`;
+
   ctx += `=== תחזית מחושבת ===\n`;
   ctx += `סה"כ משמרות: ${c.nShifts}\n`;
   ctx += `משמרות לילה: ${c.nNights}\n`;
@@ -1482,6 +1483,24 @@ function buildAnalysisContext() {
   ctx += `תוספת שבת: ${fmtMoney(c.paySab)} ₪\n`;
   ctx += `כוננות: ${fmtMoney(c.payStandby)} ₪\n`;
   ctx += `סה"כ תחזית: ${fmtMoney(c.total)} ₪\n\n`;
+
+  // Shift breakdown by type from editor
+  const counts = editorCounts || parsedCounts || {};
+  const typeKeys = Object.keys(counts).filter(k=>counts[k]>0);
+  if(typeKeys.length) {
+    ctx += `=== פירוט משמרות מהסידור ===\n`;
+    typeKeys.forEach(k => {
+      const n = counts[k];
+      const lbl = LABELS[k] || k;
+      ctx += `  ${lbl}: ${n} משמרות`;
+      if(k==='night'||k==='double_an')      ctx += ` → ${(n*8.5).toFixed(1)} ש"ג 200%`;
+      else if(k==='morning'||k==='afternoon') ctx += ` → ${(n*0.5).toFixed(1)} ש"ג 100%`;
+      else if(k==='double_ma')               ctx += ` → ${(n*4.33).toFixed(2)} ש"ג 100%`;
+      ctx += '\n';
+    });
+    ctx += '\n';
+  }
+
   if(s) {
     ctx += `=== נתוני תלוש ===\n`;
     if(s.ot100h!=null) ctx += `קוד 100 (ש"ג 100%): ${s.ot100h} שעות = ${fmtMoney(s.ot100p)} ₪\n`;
@@ -1490,8 +1509,70 @@ function buildAnalysisContext() {
     if(s.stbyP!=null)  ctx += `קוד 110 (כוננות): ${fmtMoney(s.stbyP)} ₪\n`;
     const slipTotal = [s.ot100p,s.ot200p,s.sabP,s.stbyP].filter(v=>v!=null).reduce((a,b)=>a+b,0);
     ctx += `סה"כ תלוש: ${fmtMoney(slipTotal)} ₪\n`;
-    ctx += `הפרש: ${fmtMoney(c.total - slipTotal)} ₪\n\n`;
+    const diff = c.total - slipTotal;
+    ctx += `הפרש: ${fmtMoney(diff)} ₪ (${diff>0?'שולם פחות':'שולם יותר'})\n\n`;
+
+    // Detailed reconciliation when discrepancy exists
+    if(Math.abs(diff) > 50) {
+      ctx += `=== בדיקת פערים מפורטת (נדרשת כי הפרש > 50₪) ===\n`;
+
+      // 200% hours gap
+      if(s.ot200h!=null) {
+        const gap200 = c.tot200 - s.ot200h;
+        ctx += `ש"ג 200%: סידור=${c.tot200.toFixed(1)}ש, תלוש=${s.ot200h}ש, פער=${gap200.toFixed(1)}ש`;
+        if(Math.abs(gap200)>0.5) {
+          ctx += ` ← ${Math.abs(gap200).toFixed(1)} שעות ${gap200>0?'חסרות בתלוש':'עודפות בתלוש'}\n`;
+          // Show which shifts contribute to 200%
+          const nightCount = (counts['night']||0)+(counts['double_an']||0);
+          ctx += `   מקור 200% בסידור: ${nightCount} משמרות לילה × 8.5 = ${(nightCount*8.5).toFixed(1)} שע\n`;
+          if(Math.abs(gap200)>1) ctx += `   בדוק: האם כל משמרות הלילה מוכרות בתלוש?\n`;
+        } else ctx += ` ← תואם ✓\n`;
+      }
+
+      // 100% hours gap
+      if(s.ot100h!=null) {
+        const gap100 = c.tot100 - s.ot100h;
+        ctx += `ש"ג 100%: סידור=${c.tot100.toFixed(1)}ש, תלוש=${s.ot100h}ש, פער=${gap100.toFixed(1)}ש`;
+        if(Math.abs(gap100)>0.5) {
+          ctx += ` ← ${Math.abs(gap100).toFixed(1)} שעות ${gap100>0?'חסרות בתלוש':'עודפות בתלוש'}\n`;
+          ctx += `   מקור 100% בסידור: כוננות ${STANDBY}ש + משמרות בוקר/צהריים + כפולות\n`;
+        } else ctx += ` ← תואם ✓\n`;
+      }
+
+      // Shabbat visits gap
+      if(s.sabD!=null) {
+        const gapSab = c.sabDays - s.sabD;
+        ctx += `שבת בקרים: סידור=${c.sabDays}, תלוש=${s.sabD}, פער=${gapSab}`;
+        if(Math.abs(gapSab)>=1) {
+          ctx += ` ← ${Math.abs(gapSab)} ביקורים ${gapSab>0?'חסרים בתלוש':'עודפים בתלוש'}\n`;
+          ctx += `   בדוק: משמרות בוקר שבת בסידור (תאריכים: `;
+          const sabShifts = shifts.filter(sh=>sh.type==='morning'&&sh.dow===6);
+          ctx += sabShifts.length ? sabShifts.map(sh=>sh.dateStr).join(', ') : 'לא זוהו';
+          ctx += `)\n`;
+        } else ctx += ` ← תואם ✓\n`;
+      }
+
+      // Standby gap
+      if(s.stbyP!=null) {
+        const expStby = STANDBY * HR;
+        const gapStby = expStby - s.stbyP;
+        ctx += `כוננות: צפוי=${fmtMoney(expStby)}₪, תלוש=${fmtMoney(s.stbyP)}₪, פער=${fmtMoney(gapStby)}₪`;
+        ctx += Math.abs(gapStby)<10 ? ` ← תואם ✓\n` : ` ← בדוק!\n`;
+      }
+
+      // Shift-level detail
+      if(shifts && shifts.length) {
+        ctx += `\nתאריכי משמרות מהסידור (${shifts.length} סה"כ):\n`;
+        const byType = {};
+        shifts.forEach(sh => { byType[sh.type]=(byType[sh.type]||[]); byType[sh.type].push(sh.dateStr+`(${sh.dayLetter})`); });
+        Object.entries(byType).forEach(([t,dates]) => {
+          ctx += `  ${LABELS[t]||t}: ${dates.join(', ')}\n`;
+        });
+      }
+      ctx += '\n';
+    }
   }
+
   // Learning history
   const hist = JSON.parse(localStorage.getItem(HIST_KEY)||'[]');
   if(hist.length) {
