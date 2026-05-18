@@ -1557,7 +1557,7 @@ async function callClaude(prompt) {
 }
 
 async function callGemini(prompt) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${encodeURIComponent(aiApiKey)}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${encodeURIComponent(aiApiKey)}`;
   const resp = await fetch(url, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
