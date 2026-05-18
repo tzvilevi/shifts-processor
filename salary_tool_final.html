@@ -1581,7 +1581,7 @@ async function callClaude(prompt) {
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
+      max_tokens: 4096,
       messages: [{role:'user', content: prompt}],
     }),
   });
@@ -1646,7 +1646,7 @@ async function callGemini(prompt) {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: 1024, temperature: 0.4 },
+      generationConfig: { maxOutputTokens: 4096, temperature: 0.4 },
     }),
   });
   if(!resp.ok) {
