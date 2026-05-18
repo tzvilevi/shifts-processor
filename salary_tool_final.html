@@ -1357,6 +1357,19 @@ function renderCompare(){
   if(slipRawText && shifts && shifts.length) {
     const schedDates = new Set(shifts.filter(sh=>sh.date).map(sh=>sh.dateStr));
     const sheetDates = extractWorkDates(slipRawText);
+    // Also extract absence dates from sheet (scheduled but marked absent/sick)
+    const ABSENCE_RE2 = /חופשה|מחלה|מנוחה|שבתון/;
+    const sheetAbsences = new Set();
+    if(slipRawText) {
+      slipRawText.split('\n').forEach(line => {
+        const mDate = line.match(/\b(\d{1,2}) (\d{1,2})\/[א-ת]/);
+        if(!mDate) return;
+        const mo = parseInt(mDate[1]), d = parseInt(mDate[2]);
+        if(d<1||d>31||mo<1||mo>12) return;
+        const ds = `${schedDates.size>0?[...schedDates][0].slice(0,4):'2026'}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        if(schedDates.has(ds) && ABSENCE_RE2.test(line) && !sheetDates.has(ds)) sheetAbsences.add(ds);
+      });
+    }
 
     let dcHtml = '';
     if(sheetDates.size > 0) {
@@ -1374,24 +1387,41 @@ function renderCompare(){
         <div style="padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;background:#fff">`;
 
       // Left: missing from sheet
+      const missingFromSheet = inSchedNotSheet.filter(d=>!sheetAbsences.has(d));
+      const markedAbsent    = inSchedNotSheet.filter(d=> sheetAbsences.has(d));
+      const totalProblems   = missingFromSheet.length + markedAbsent.length;
+
       dcHtml += `<div>
-        <div style="font-weight:700;font-size:13px;color:${inSchedNotSheet.length?'#dc2626':'#16a34a'};margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid ${inSchedNotSheet.length?'#fca5a5':'#86efac'}">
-          ${inSchedNotSheet.length ? `⚠️ בסידור — חסרים בגיליון (${inSchedNotSheet.length})` : '✅ כל ימי הסידור בגיליון'}
+        <div style="font-weight:700;font-size:13px;color:${totalProblems?'#dc2626':'#16a34a'};margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid ${totalProblems?'#fca5a5':'#86efac'}">
+          ${totalProblems ? `⚠️ בסידור — בעיות (${totalProblems})` : '✅ כל ימי הסידור בגיליון'}
         </div>`;
-      if(inSchedNotSheet.length) {
-        dcHtml += `<div style="font-size:12px;color:#7f1d1d;line-height:2">`;
-        inSchedNotSheet.forEach(d => {
+      if(missingFromSheet.length) {
+        dcHtml += `<div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:4px">🔴 חסרים לחלוטין בגיליון (${missingFromSheet.length}):</div>`;
+        dcHtml += `<div style="font-size:12px;line-height:1.8;margin-bottom:8px">`;
+        missingFromSheet.forEach(d => {
           const sh = shifts.find(s=>s.dateStr===d);
-          const lbl = sh ? (LABELS[sh.type]||sh.type) : '?';
-          const day = sh ? sh.dayLetter : '?';
           dcHtml += `<div style="display:flex;gap:6px;align-items:center;padding:2px 6px;background:#fef2f2;border-radius:4px;margin-bottom:3px">
             <span style="font-weight:700;min-width:90px">${d}</span>
-            <span style="color:#9ca3af">${day}</span>
-            <span style="color:#dc2626">${lbl}</span>
+            <span style="color:#9ca3af">${sh?sh.dayLetter:'?'}</span>
+            <span style="color:#dc2626">${sh?(LABELS[sh.type]||sh.type):'?'}</span>
           </div>`;
         });
-        dcHtml += `</div><div style="margin-top:8px;font-size:11px;color:#dc2626;font-weight:600">→ משמרות אלו לא נכנסו לחישוב השכר!</div>`;
-      } else {
+        dcHtml += `</div><div style="font-size:11px;color:#dc2626;font-weight:600;margin-bottom:8px">→ משמרות אלו לא נכנסו לחישוב השכר!</div>`;
+      }
+      if(markedAbsent.length) {
+        dcHtml += `<div style="font-size:11px;font-weight:700;color:#d97706;margin-bottom:4px">🟡 בגיליון כהיעדרות (${markedAbsent.length}):</div>`;
+        dcHtml += `<div style="font-size:12px;line-height:1.8">`;
+        markedAbsent.forEach(d => {
+          const sh = shifts.find(s=>s.dateStr===d);
+          dcHtml += `<div style="display:flex;gap:6px;align-items:center;padding:2px 6px;background:#fffbeb;border-radius:4px;margin-bottom:3px">
+            <span style="font-weight:700;min-width:90px">${d}</span>
+            <span style="color:#9ca3af">${sh?sh.dayLetter:'?'}</span>
+            <span style="color:#d97706">${sh?(LABELS[sh.type]||sh.type):'?'} — היעדרות</span>
+          </div>`;
+        });
+        dcHtml += `</div>`;
+      }
+      if(!totalProblems) {
         dcHtml += `<div style="font-size:12px;color:#16a34a">כל ${matched} ימי הסידור מופיעים בגיליון.</div>`;
       }
       dcHtml += `</div>`;
@@ -1560,36 +1590,52 @@ function updateAiBtn() {
 function extractWorkDates(text) {
   if(!text || !shifts || !shifts.length) return new Set();
 
-  // Build lookup: "DD-MM" and "D-M" → full YYYY-MM-DD string
+  // Build lookup: "DD-MM" → full YYYY-MM-DD string (from actual schedule)
   const lookup = new Map();
   shifts.filter(sh=>sh.date).forEach(sh => {
     const d = sh.date.getDate(), mo = sh.date.getMonth()+1;
     lookup.set(`${String(d).padStart(2,'0')}-${String(mo).padStart(2,'0')}`, sh.dateStr);
-    lookup.set(`${d}-${mo}`, sh.dateStr); // without leading zeros
+    lookup.set(`${d}-${mo}`, sh.dateStr);
   });
 
   const found = new Set();
+  // Keywords that mark absence lines (not actual work)
+  const ABSENCE_RE = /חופשה|מחלה|מנוחה|שבתון/;
 
-  // Pattern 1: DD/MM or DD.MM (with optional year)
-  const re1 = /\b(\d{1,2})[\/.](\d{1,2})(?:[\/.](?:\d{2}|\d{4}))?\b/g;
+  // ── Pattern 1: Israeli Hilan attendance report format ──
+  // Each row starts: "MM DD/HebrewDay  [times or absence]"
+  // Example: "02 16/ב 5:44 14:35 ..."  |  "03 01/א חופשה 8:24"
+  text.split('\n').forEach(line => {
+    const mDate = line.match(/\b(\d{1,2}) (\d{1,2})\/[א-ת]/);
+    if(!mDate) return;
+    const mo = parseInt(mDate[1]), d = parseInt(mDate[2]);
+    if(d < 1 || d > 31 || mo < 1 || mo > 12) return;
+    const k = `${String(d).padStart(2,'0')}-${String(mo).padStart(2,'0')}`;
+    if(!lookup.has(k)) return;
+    // Only count as work day if line has clock-in times AND is not an absence
+    const hasTime = /\b\d{1,2}:\d{2}\b/.test(line);
+    const isAbsence = ABSENCE_RE.test(line);
+    if(hasTime && !isAbsence) found.add(lookup.get(k));
+  });
+
+  // ── Pattern 2: Standard DD/MM format (payslip or other docs) ──
+  const re2 = /\b(\d{1,2})\/(\d{1,2})(?:\/(?:\d{2}|\d{4}))?\b/g;
   let m;
-  while((m = re1.exec(text)) !== null) {
+  while((m = re2.exec(text)) !== null) {
     const d = parseInt(m[1]), mo = parseInt(m[2]);
     if(d < 1 || d > 31 || mo < 1 || mo > 12) continue;
-    const key1 = `${String(d).padStart(2,'0')}-${String(mo).padStart(2,'0')}`;
-    const key2 = `${d}-${mo}`;
-    if(lookup.has(key1)) found.add(lookup.get(key1));
-    else if(lookup.has(key2)) found.add(lookup.get(key2));
+    const k = `${String(d).padStart(2,'0')}-${String(mo).padStart(2,'0')}`;
+    if(lookup.has(k)) found.add(lookup.get(k));
   }
 
-  // Pattern 2: YYYY-MM-DD or YYYY/MM/DD
-  const re2 = /\b(20\d{2})[-\/](\d{2})[-\/](\d{2})\b/g;
-  while((m = re2.exec(text)) !== null) {
+  // ── Pattern 3: YYYY-MM-DD ──
+  const re3 = /\b(20\d{2})[-\/](\d{2})[-\/](\d{2})\b/g;
+  while((m = re3.exec(text)) !== null) {
     const ds = `${m[1]}-${m[2]}-${m[3]}`;
     if(shifts.some(sh=>sh.dateStr===ds)) found.add(ds);
   }
 
-  dbgP(`חילוץ תאריכים מגיליון: נמצאו ${found.size} תואמים | מפתחות סידור: ${lookup.size/2} | דוגמת טקסט PDF: ${text.slice(0,300).replace(/\n/g,' ')}`);
+  dbgP(`חילוץ תאריכים: ${found.size} ימי עבודה תואמים מ-${lookup.size/2} ימי סידור`);
   return found;
 }
 
