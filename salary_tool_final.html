@@ -406,6 +406,32 @@ button.green:hover:not(:disabled){background:#0f6530;}
     </div>
   </div>
 
+  <!-- Gemini model selector (shown only when Gemini is selected) -->
+  <div id="geminiModelRow" style="display:none;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;margin-bottom:10px">
+    <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:6px">🔧 מודל Gemini — בחר או הקלד:</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+      <button class="formula-btn" onclick="setGeminiModel('gemini-2.5-flash-preview-05-20','v1beta')">2.5 Flash Preview</button>
+      <button class="formula-btn" onclick="setGeminiModel('gemini-2.5-pro-preview-06-05','v1beta')">2.5 Pro Preview</button>
+      <button class="formula-btn" onclick="setGeminiModel('gemini-2.0-flash','v1beta')">2.0 Flash</button>
+      <button class="formula-btn" onclick="setGeminiModel('gemini-1.5-pro','v1beta')">1.5 Pro</button>
+      <button class="formula-btn" onclick="setGeminiModel('gemini-1.5-flash','v1beta')">1.5 Flash</button>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span style="font-size:11px;color:#92400e;white-space:nowrap">מודל נוכחי:</span>
+      <input type="text" id="geminiModelInput" value="gemini-2.0-flash-lite"
+        style="flex:1;padding:5px 8px;border:1px solid #fcd34d;border-radius:5px;font-size:12px;font-family:monospace;background:#fff"
+        onchange="geminiModel=this.value">
+      <span style="font-size:11px;color:#92400e;white-space:nowrap">גרסת API:</span>
+      <select id="geminiApiVer" onchange="geminiApiVer=this.value"
+        style="padding:5px 7px;border:1px solid #fcd34d;border-radius:5px;font-size:12px;background:#fff">
+        <option value="v1beta" selected>v1beta</option>
+        <option value="v1">v1</option>
+        <option value="v1alpha">v1alpha</option>
+      </select>
+    </div>
+    <div style="margin-top:5px;font-size:10px;color:#92400e">לא יודע איזה מודל עובד? <a href="#" onclick="fetchGeminiModels();return false" style="color:var(--primary)">לחץ כאן לבדיקה אוטומטית ←</a></div>
+  </div>
+
   <!-- Action buttons -->
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
     <button onclick="runAiAnalysis()" id="aiRunBtn" disabled
@@ -1398,6 +1424,17 @@ function selectAiProvider(prov, recalc=false) {
     dot.className = 'ai-prov-status ' + (hasKey ? 'ok' : 'empty');
   });
 
+  // Show/hide Gemini model selector
+  const gmRow = document.getElementById('geminiModelRow');
+  if (gmRow) gmRow.style.display = prov === 'gemini' ? 'block' : 'none';
+  // Restore saved gemini model into inputs
+  if (prov === 'gemini') {
+    const inp2 = document.getElementById('geminiModelInput');
+    const sel2 = document.getElementById('geminiApiVer');
+    if (inp2) inp2.value = geminiModel;
+    if (sel2) sel2.value = geminiApiVer;
+  }
+
   // Update run button
   const btn = document.getElementById('aiRunBtn');
   if(btn) btn.disabled = !aiApiKey.trim();
@@ -1556,8 +1593,43 @@ async function callClaude(prompt) {
   return data.content?.[0]?.text || 'לא התקבלה תשובה';
 }
 
+let geminiModel  = localStorage.getItem('geminiModel')  || 'gemini-2.0-flash-lite';
+let geminiApiVer = localStorage.getItem('geminiApiVer') || 'v1beta';
+
+function setGeminiModel(model, ver) {
+  geminiModel  = model;
+  geminiApiVer = ver || 'v1beta';
+  const inp = document.getElementById('geminiModelInput');
+  const sel = document.getElementById('geminiApiVer');
+  if (inp) inp.value = model;
+  if (sel) sel.value = geminiApiVer;
+  localStorage.setItem('geminiModel',  geminiModel);
+  localStorage.setItem('geminiApiVer', geminiApiVer);
+}
+
+async function fetchGeminiModels() {
+  if (!aiApiKey) { alert('הכנס מפתח API קודם'); return; }
+  const url = `https://generativelanguage.googleapis.com/${geminiApiVer}/models?key=${encodeURIComponent(aiApiKey)}`;
+  try {
+    const r = await fetch(url);
+    const d = await r.json();
+    const names = (d.models||[]).map(m=>m.name.replace('models/','')).filter(n=>n.includes('gemini'));
+    if (!names.length) { alert('לא נמצאו מודלים — נסה API ver אחר'); return; }
+    const chosen = names[0];
+    setGeminiModel(chosen, geminiApiVer);
+    alert('מודלים זמינים:\n'+names.join('\n')+'\n\nהוגדר אוטומטית: '+chosen);
+  } catch(e) { alert('שגיאה: '+e.message); }
+}
+
 async function callGemini(prompt) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${encodeURIComponent(aiApiKey)}`;
+  // sync from inputs in case user typed manually
+  const inp = document.getElementById('geminiModelInput');
+  const sel = document.getElementById('geminiApiVer');
+  if (inp && inp.value) geminiModel  = inp.value;
+  if (sel && sel.value) geminiApiVer = sel.value;
+  localStorage.setItem('geminiModel',  geminiModel);
+  localStorage.setItem('geminiApiVer', geminiApiVer);
+  const url = `https://generativelanguage.googleapis.com/${geminiApiVer}/models/${geminiModel}:generateContent?key=${encodeURIComponent(aiApiKey)}`;
   const resp = await fetch(url, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
