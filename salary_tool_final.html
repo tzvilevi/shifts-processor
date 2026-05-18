@@ -1593,7 +1593,18 @@ async function callClaude(prompt) {
   return data.content?.[0]?.text || 'לא התקבלה תשובה';
 }
 
-let geminiModel  = localStorage.getItem('geminiModel')  || 'gemini-2.5-flash';
+// Valid models confirmed from API — reset localStorage if it contains an old/invalid value
+const VALID_GEMINI_MODELS = [
+  'gemini-2.5-flash','gemini-2.5-pro','gemini-2.5-flash-lite',
+  'gemini-3-flash-preview','gemini-3.1-flash-lite','gemini-2.0-flash-001',
+  'gemini-2.0-flash','gemini-flash-latest','gemini-pro-latest'
+];
+let _storedModel = localStorage.getItem('geminiModel');
+if (!_storedModel || !VALID_GEMINI_MODELS.includes(_storedModel)) {
+  _storedModel = 'gemini-2.5-flash';
+  localStorage.setItem('geminiModel', _storedModel);
+}
+let geminiModel  = _storedModel;
 let geminiApiVer = localStorage.getItem('geminiApiVer') || 'v1beta';
 
 function setGeminiModel(model, ver) {
