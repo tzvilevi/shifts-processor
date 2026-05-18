@@ -1358,12 +1358,13 @@ function renderCompare(){
     const schedDates = new Set(shifts.filter(sh=>sh.date).map(sh=>sh.dateStr));
     const sheetDates = extractWorkDates(slipRawText);
 
+    let dcHtml = '';
     if(sheetDates.size > 0) {
       const inSchedNotSheet = [...schedDates].filter(d=>!sheetDates.has(d)).sort();
       const inSheetNotSched = [...sheetDates].filter(d=>!schedDates.has(d)).sort();
       const matched = [...schedDates].filter(d=>sheetDates.has(d)).length;
 
-      let dcHtml = `<details open style="border:1px solid #fca5a5;border-radius:10px;overflow:hidden">
+      dcHtml = `<details open style="border:1px solid #fca5a5;border-radius:10px;overflow:hidden">
         <summary style="background:#fef2f2;padding:10px 14px;cursor:pointer;font-weight:700;font-size:14px;list-style:none;display:flex;align-items:center;gap:8px">
           📅 השוואת ימי עבודה: סידור ↔ גיליון מנותח
           <span style="margin-right:auto;font-weight:400;font-size:12px;color:#6b7280">
@@ -1417,7 +1418,23 @@ function renderCompare(){
       dcPanel.innerHTML = dcHtml;
       dcPanel.style.display = '';
     } else {
-      dcPanel.style.display = 'none';
+      // No dates found — show raw PDF text snippet so user can diagnose format
+      const snippet = slipRawText ? slipRawText.slice(0, 600).replace(/</g,'&lt;') : '(אין טקסט)';
+      dcHtml += `<details open style="border:1px solid #fde68a;border-radius:10px;overflow:hidden;margin-top:0">
+        <summary style="background:#fffbeb;padding:10px 14px;cursor:pointer;font-weight:700;font-size:13px;list-style:none">
+          ⚠️ לא זוהו תאריכים בגיליון — יש לבדוק פורמט הקובץ
+        </summary>
+        <div style="padding:12px;font-size:11px">
+          <div style="margin-bottom:8px;color:#92400e">הטקסט שחולץ מהגיליון (600 תווים ראשונים) — שתף זאת עם מי שבנה את הכלי:</div>
+          <pre style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:8px;white-space:pre-wrap;font-family:monospace;direction:ltr;text-align:left;max-height:200px;overflow-y:auto">${snippet}</pre>
+          <div style="margin-top:8px;color:#6b7280">ימי סידור שחיפשנו (לפי סידור):
+            ${[...schedDates].sort().join(', ')}
+          </div>
+        </div>
+      </details>`;
+
+      dcPanel.innerHTML = dcHtml;
+      dcPanel.style.display = '';
     }
   } else {
     dcPanel.style.display = 'none';
