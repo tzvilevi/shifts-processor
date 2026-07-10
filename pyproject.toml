@@ -10,6 +10,7 @@ ortools = "*"
 flask = "^3.1.0"
 gunicorn = "^23.0.0"
 flask-swagger-ui = "*"
+pypdf = "^6.0"
 
 [tool.poetry.scripts]
 run-service = "shift_scheduler_service:app"
