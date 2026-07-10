@@ -60,11 +60,21 @@ Options:
 
 ### Web interface
 
-Run the Flask service and open `http://localhost:5000/pdf` in a browser to
-upload a PDF, enter its password, and download the unlocked file:
+Two ways to run the web form:
+
+**Full service** (includes the shift scheduler):
 
 ```bash
 python shift_scheduler_service.py
+# open http://localhost:5000/pdf
+```
+
+**Standalone PDF app** (only needs `flask` + `pypdf`, ideal for free hosting):
+
+```bash
+pip install -r requirements-pdf.txt
+python pdf_app.py
+# open http://localhost:5000/
 ```
 
 You can also call the endpoint directly:

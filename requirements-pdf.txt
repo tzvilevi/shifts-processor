@@ -1,0 +1,5 @@
+# Minimal dependencies for the standalone PDF password tool (pdf_app.py).
+# Use this on free hosts to avoid installing the heavier scheduler deps.
+flask>=3.1.0
+gunicorn>=23.0.0
+pypdf>=6.0
