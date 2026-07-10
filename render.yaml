@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: shifts-processor
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn shift_scheduler_service:app
